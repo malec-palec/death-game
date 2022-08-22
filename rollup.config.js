@@ -41,7 +41,7 @@ function debugBuild() {
       url({
         fileName: "[dirname][name][extname]"
       }),
-      createHtmlPlugin("src/index.mustache", "bundle.js", ["lib/kontra.js"])
+      createHtmlPlugin("src/index.mustache", "bundle.js", true, ["lib/kontra.js"])
     ]
   };
 }
