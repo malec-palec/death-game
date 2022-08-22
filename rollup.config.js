@@ -5,6 +5,7 @@ import typescript from "@rollup/plugin-typescript";
 import url from "@rollup/plugin-url";
 import copy from "rollup-plugin-copy";
 import del from "rollup-plugin-delete";
+import fileSize from "rollup-plugin-filesize";
 import { terser } from "rollup-plugin-terser";
 import createHtmlPlugin from "./lib/create-html.js";
 
@@ -46,6 +47,9 @@ function debugBuild() {
   };
 }
 
+// const props = [];
+// const regex = new RegExp(`${props.join("|")}`);
+
 function releaseBuild() {
   return {
     input: "src/index.ts",
@@ -61,7 +65,8 @@ function releaseBuild() {
       }),
       nodeResolve(),
       commonjs(),
-      terser(),
+      terser(), // { mangle: { properties: { builtins: true, regex } } }
+      fileSize(),
       createHtmlPlugin("src/index.mustache", "bundle.js")
     ]
   };
