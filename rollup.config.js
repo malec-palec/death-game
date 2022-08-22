@@ -40,6 +40,7 @@ function debugBuild() {
       }),
       ...commonPlugins,
       url({
+        limit: 0,
         fileName: "[dirname][name][extname]"
       }),
       createHtmlPlugin("src/index.mustache", "bundle.js", true, ["lib/kontra.js"])
@@ -47,7 +48,7 @@ function debugBuild() {
   };
 }
 
-// const props = [];
+// const props = ["velocity", "position", "acceleration"];
 // const regex = new RegExp(`${props.join("|")}`);
 
 function releaseBuild() {
@@ -61,7 +62,8 @@ function releaseBuild() {
       del({ targets: "dist/*", verbose: true }),
       ...commonPlugins,
       url({
-        fileName: "[dirname][hash][extname]"
+        limit: 0,
+        fileName: "[name][extname]"
       }),
       nodeResolve(),
       commonjs(),

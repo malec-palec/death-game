@@ -1,26 +1,18 @@
-import { GameLoop, init, Sprite } from "kontra";
+import HERO_URL from "./assets/hero.png";
+import { DeathGame } from "./Game";
+import { loadImage } from "./loader";
 
-const { canvas } = init("game");
+import { GameLoop, init } from "kontra";
 
-const sprite = Sprite({
-  x: 100,
-  y: 80,
-  color: "red",
-  width: 20,
-  height: 40,
-  dx: 2
-});
+async function main() {
+  const { canvas: gameCanvas } = init("game");
+  const heroImage = await loadImage(HERO_URL);
 
-const loop = GameLoop({
-  update: function () {
-    sprite.update();
-    if (sprite.x > canvas.width) {
-      sprite.x = -sprite.width;
-    }
-  },
-  render: function () {
-    sprite.render();
-  }
-});
-
-loop.start();
+  const game = new DeathGame(gameCanvas, heroImage);
+  const gameLoop = GameLoop({
+    update: game.update.bind(game),
+    render: game.render.bind(game)
+  });
+  gameLoop.start();
+}
+main();
