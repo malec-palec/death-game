@@ -1,0 +1,49 @@
+{
+  "name": "death-game",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "scripts": {
+    "build": "rollup -c",
+    "build:release": "npm run build -- --environment NODE_ENV:production",
+    "start": "start npm run build -- -w",
+    "format": "prettier --ignore-path .gitignore --write **/*.{json,js,ts}",
+    "format:check": "prettier --ignore-path .gitignore --check **/*.{json,js,ts}",
+    "lint": "eslint --ignore-path .gitignore --fix **/*.{js,ts}",
+    "lint:check": "eslint --ignore-path .gitignore **/*.{js,ts}"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@bitbucket.org/malec-palec/death-game.git"
+  },
+  "keywords": [],
+  "author": "volkov_ayyy",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://bitbucket.org/malec-palec/death-game/issues"
+  },
+  "homepage": "https://bitbucket.org/malec-palec/death-game#readme",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^22.0.2",
+    "@rollup/plugin-json": "^4.1.0",
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "@rollup/plugin-replace": "^4.0.0",
+    "@rollup/plugin-typescript": "^8.3.4",
+    "@rollup/plugin-url": "^7.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.34.0",
+    "@typescript-eslint/parser": "^5.34.0",
+    "eslint": "^8.22.0",
+    "eslint-config-prettier": "^8.5.0",
+    "handlebars": "^4.7.7",
+    "prettier": "^2.7.1",
+    "rollup": "^2.78.1",
+    "rollup-plugin-copy": "^3.4.0",
+    "rollup-plugin-delete": "^2.0.0",
+    "rollup-plugin-terser": "^7.0.2",
+    "typescript": "^4.7.4"
+  },
+  "type": "module",
+  "dependencies": {
+    "kontra": "^8.0.0"
+  }
+}
