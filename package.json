@@ -5,12 +5,13 @@
   "private": true,
   "scripts": {
     "build": "rollup -c",
-    "build:release": "npm run build -- --environment NODE_ENV:production",
-    "start": "start npm run build -- -w",
+    "build:release": "yarn build --environment NODE_ENV:production && yarn zip",
+    "start": "start yarn build -w",
     "format": "prettier --ignore-path .gitignore --write **/*.{json,js,ts}",
     "format:check": "prettier --ignore-path .gitignore --check **/*.{json,js,ts}",
     "lint": "eslint --ignore-path .gitignore --fix **/*.{js,ts}",
-    "lint:check": "eslint --ignore-path .gitignore **/*.{js,ts}"
+    "lint:check": "eslint --ignore-path .gitignore **/*.{js,ts}",
+    "zip": "gulp"
   },
   "repository": {
     "type": "git",
@@ -34,6 +35,10 @@
     "@typescript-eslint/parser": "^5.34.0",
     "eslint": "^8.22.0",
     "eslint-config-prettier": "^8.5.0",
+    "fs-extra": "^10.1.0",
+    "gulp": "^4.0.2",
+    "gulp-size": "^4.0.1",
+    "gulp-zip": "^5.1.0",
     "handlebars": "^4.7.7",
     "html-minifier": "^4.0.0",
     "prettier": "^2.7.1",

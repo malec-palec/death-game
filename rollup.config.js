@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import commonjs from "@rollup/plugin-commonjs";
 import json from "@rollup/plugin-json";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
@@ -10,7 +11,6 @@ import { terser } from "rollup-plugin-terser";
 import createHtmlPlugin from "./lib/create-html.js";
 
 const devMode = process.env.NODE_ENV !== "production";
-/* eslint-disable no-console */
 console.log(`${devMode ? "development" : "production"} mode bundle`);
 
 const commonPlugins = [typescript(), json()];
