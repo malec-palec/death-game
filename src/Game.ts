@@ -1,33 +1,30 @@
 import { Sprite } from "kontra";
 
-export class DeathGame {
-  private _sprite: Sprite;
+export const createGame = (canvas: HTMLCanvasElement, image: HTMLImageElement) => {
+  let time = 0;
 
-  private _time = 0;
+  const sprite = Sprite({
+    x: 50,
+    y: 50,
+    origin: { x: 0.5, y: 0.5 },
+    scaleX: 4,
+    scaleY: 4,
+    image,
+    dx: 2
+  });
+  sprite.render();
 
-  constructor(private _canvas: HTMLCanvasElement, image: HTMLImageElement) {
-    this._sprite = Sprite({
-      x: 50,
-      y: 50,
-      origin: { x: 0.5, y: 0.5 },
-      scaleX: 4,
-      scaleY: 4,
-      image,
-      dx: 2
-    });
-    this._sprite.render();
-  }
+  return {
+    update: (dt: number) => {
+      sprite.rotation = Math.sin((time += dt));
 
-  update(dt: number) {
-    this._sprite.rotation = Math.sin((this._time += dt));
-
-    this._sprite.update();
-    if (this._sprite.x > this._canvas.width) {
-      this._sprite.x = -this._sprite.width;
+      sprite.update();
+      if (sprite.x > canvas.width) {
+        sprite.x = -sprite.width;
+      }
+    },
+    render: () => {
+      sprite.render();
     }
-  }
-
-  render() {
-    this._sprite.render();
-  }
-}
+  };
+};
