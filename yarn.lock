@@ -2693,11 +2693,6 @@ kind-of@^6.0.0, kind-of@^6.0.2:
   resolved "https://registry.yarnpkg.com/kind-of/-/kind-of-6.0.3.tgz#07c05034a6c349fa06e24fa35aa76db4580ce4dd"
   integrity sha512-dcS1ul+9tmeD95T+x28/ehLgd9mENa3LsvDTtzm3vyBEO7RPptvAD+t44WVXaUjTBRcrpFeFlC8WCruUR456hw==
 
-kontra@^8.0.0:
-  version "8.0.0"
-  resolved "https://registry.yarnpkg.com/kontra/-/kontra-8.0.0.tgz#661b46b650ed86c9c1a71e723b54dc2a7ab1e30b"
-  integrity sha512-7Go/K4S+6gtyillSKSkSlNq46neuIWGvof9PYyzBwiBKGrs+1GHzsDknaeIID3GulV+sK1oKcV0hB2CyyO7ePQ==
-
 last-run@^1.1.0:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/last-run/-/last-run-1.1.1.tgz#45b96942c17b1c79c772198259ba943bebf8ca5b"

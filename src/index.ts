@@ -1,15 +1,22 @@
 import HERO_URL from "./assets/hero.png";
-import { createGame } from "./Game";
+import initKeys from "./core/keyboard";
+import { createGame } from "./game";
 import { loadImage } from "./loader";
 
-import { GameLoop, init } from "kontra";
-
 async function main() {
-  const { canvas } = init("g");
   const heroImage = await loadImage(HERO_URL);
 
-  const game = createGame(canvas, heroImage);
-  const gameLoop = GameLoop(game);
-  gameLoop.start();
+  initKeys();
+
+  const canvas = g;
+  const context = g.getContext("2d")!;
+  const game = createGame(canvas, context, heroImage);
+
+  // TODO: fix step
+  requestAnimationFrame(function loop() {
+    requestAnimationFrame(loop);
+    game.update(1000 / 60);
+    game.render();
+  });
 }
 main();

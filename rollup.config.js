@@ -4,7 +4,6 @@ import json from "@rollup/plugin-json";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import typescript from "@rollup/plugin-typescript";
 import url from "@rollup/plugin-url";
-import copy from "rollup-plugin-copy";
 import del from "rollup-plugin-delete";
 import fileSize from "rollup-plugin-filesize";
 import { terser } from "rollup-plugin-terser";
@@ -21,35 +20,35 @@ function debugBuild() {
     output: {
       file: "dist/bundle.js",
       format: "iife",
-      sourcemap: "inline",
-      globals: {
-        kontra: "kontra"
-      }
+      sourcemap: "inline"
     },
     plugins: [
       del({ targets: "dist/*", verbose: true, runOnce: true }),
-      copy({
-        targets: [
-          {
-            src: ["node_modules/kontra/kontra.js"],
-            dest: "dist/lib"
-          }
-        ],
-        verbose: true,
-        runOnce: true
-      }),
       ...commonPlugins,
       url({
         limit: 0,
         fileName: "[dirname][name][extname]"
       }),
-      createHtmlPlugin("src/index.mustache", "bundle.js", true, ["lib/kontra.js"])
+      createHtmlPlugin("src/index.mustache", "bundle.js", true)
     ]
   };
 }
 
-// const props = ["velocity", "position", "acceleration"];
-// const regex = new RegExp(`${props.join("|")}`);
+const props = [
+  "stage",
+  "pivotX",
+  "pivotY",
+  "rotation",
+  "scaleX",
+  "scaleY",
+  "update",
+  "render",
+  "image",
+  "children",
+  "addChild",
+  "removeChild"
+];
+const regex = new RegExp(`${props.join("|")}`);
 
 function releaseBuild() {
   return {
@@ -67,7 +66,7 @@ function releaseBuild() {
       }),
       nodeResolve(),
       commonjs(),
-      terser(), // { mangle: { properties: { builtins: true, regex } } }
+      terser({ mangle: { properties: { builtins: true, regex } } }),
       fileSize(),
       createHtmlPlugin("src/index.mustache", "bundle.js")
     ]
