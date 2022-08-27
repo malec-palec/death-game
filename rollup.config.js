@@ -19,7 +19,7 @@ function debugBuild() {
     input: "src/index.ts",
     output: {
       file: "dist/bundle.js",
-      format: "iife",
+      format: "es",
       sourcemap: "inline"
     },
     plugins: [
@@ -66,9 +66,24 @@ function releaseBuild() {
       }),
       nodeResolve(),
       commonjs(),
-      terser({ mangle: { properties: { builtins: true, regex } } }),
+      terser({ ecma: 2017, mangle: { properties: { builtins: true, regex } } }),
       fileSize(),
-      createHtmlPlugin("src/index.mustache", "bundle.js")
+      createHtmlPlugin(
+        "src/index.mustache",
+        "bundle.js",
+        false,
+        [],
+        [
+          ["const", "let"],
+          ["===", "=="],
+          [/\bforEach\b/g, "map"],
+          // globals
+          ["isLeftKeyDown", "left"],
+          ["isRightKeyDown", "right"],
+          ["isUpKeyDown", "up"],
+          ["isSpaceDown", "space"]
+        ]
+      )
     ]
   };
 }

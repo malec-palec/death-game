@@ -9,10 +9,10 @@ export interface GameObjectComponent {
 
 type GameObjectProps = Partial<GameObjectComponent>;
 
-export function addGameObjectComponent<T extends DisplayObject>(
+export const addGameObjectComponent = <T extends DisplayObject>(
   obj: T,
   props?: GameObjectProps
-): T & GameObjectComponent {
+): T & GameObjectComponent => {
   const comp: GameObjectComponent = {
     vx: 0,
     vy: 0,
@@ -21,4 +21,4 @@ export function addGameObjectComponent<T extends DisplayObject>(
     ...props
   };
   return Object.assign(obj, comp);
-}
+};

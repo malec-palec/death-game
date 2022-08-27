@@ -3,36 +3,36 @@ const RIGHT = 39;
 const UP = 38;
 const SPACE = 32;
 
-export default () => {
-  isLeftKeyDown = isRightKeyDown = isUpKeyDown = isSpaceDown = false;
+isLeftKeyDown = isRightKeyDown = isUpKeyDown = isSpaceDown = false;
 
-  onkeydown = (event: KeyboardEvent) => {
-    if (event.keyCode === LEFT) {
-      isLeftKeyDown = true;
-    }
-    if (event.keyCode === RIGHT) {
-      isRightKeyDown = true;
-    }
-    if (event.keyCode === UP) {
-      isUpKeyDown = true;
-    }
-    if (event.keyCode === SPACE) {
-      isSpaceDown = true;
-    }
-  };
+onkeydown = (event: KeyboardEvent) => {
+  const code = event.keyCode;
+  if (code === LEFT) {
+    isLeftKeyDown = true;
+  }
+  if (code === RIGHT) {
+    isRightKeyDown = true;
+  }
+  if (code === UP) {
+    isUpKeyDown = true;
+  }
+  if (code === SPACE) {
+    isSpaceDown = true;
+  }
+};
 
-  onkeyup = (event: KeyboardEvent) => {
-    if (event.keyCode === LEFT) {
-      isLeftKeyDown = false;
-    }
-    if (event.keyCode === RIGHT) {
-      isRightKeyDown = false;
-    }
-    if (event.keyCode === UP) {
-      isUpKeyDown = false;
-    }
-    if (event.keyCode === SPACE) {
-      isSpaceDown = false;
-    }
-  };
+onkeyup = (event: KeyboardEvent) => {
+  const code = event.keyCode;
+  if (code === LEFT) {
+    isLeftKeyDown = false;
+  }
+  if (code === RIGHT) {
+    isRightKeyDown = false;
+  }
+  if (code === UP) {
+    isUpKeyDown = false;
+  }
+  if (code === SPACE) {
+    isSpaceDown = false;
+  }
 };

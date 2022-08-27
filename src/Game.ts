@@ -2,7 +2,11 @@ import { addGameObjectComponent } from "./components";
 import { createSpite } from "./core/sprite";
 import { createStage } from "./core/stage";
 
-export function createGame(canvas: HTMLCanvasElement, context: CanvasRenderingContext2D, heroImage: HTMLImageElement) {
+export const createGame = (
+  canvas: HTMLCanvasElement,
+  context: CanvasRenderingContext2D,
+  heroImage: HTMLImageElement
+) => {
   const stage = createStage(canvas);
 
   // context.imageSmoothingEnabled = false;
@@ -35,10 +39,10 @@ export function createGame(canvas: HTMLCanvasElement, context: CanvasRenderingCo
       hero.y += hero.vy;
     },
     render() {
-      context.fillStyle = "black";
+      context.fillStyle = "0";
       context.fillRect(0, 0, canvas.width, canvas.height);
 
       stage.render(context);
     }
   };
-}
+};

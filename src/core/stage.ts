@@ -6,7 +6,7 @@ export interface Stage extends DisplayObject {
   removeChild(obj: DisplayObject): void;
 }
 
-export function createStage(canvas: HTMLCanvasElement): Stage {
+export const createStage = (canvas: HTMLCanvasElement): Stage => {
   const stage = createDisplayObject(
     {
       width: canvas.width,
@@ -38,4 +38,4 @@ export function createStage(canvas: HTMLCanvasElement): Stage {
     }
   );
   return stage;
-}
+};

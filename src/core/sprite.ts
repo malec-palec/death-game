@@ -6,7 +6,7 @@ interface Sprite extends DisplayObject {
 
 type SpriteProps = Partial<Pick<DisplayObject, "x" | "y" | "pivotX" | "pivotY" | "rotation" | "scaleX" | "scaleY">>;
 
-export function createSpite(image: HTMLImageElement, props?: SpriteProps): Sprite {
+export const createSpite = (image: HTMLImageElement, props?: SpriteProps): Sprite => {
   const sprite = createDisplayObject(
     {
       ...props,
@@ -31,4 +31,4 @@ export function createSpite(image: HTMLImageElement, props?: SpriteProps): Sprit
     }
   );
   return sprite;
-}
+};
