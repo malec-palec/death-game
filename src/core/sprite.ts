@@ -1,34 +1,45 @@
 import { createDisplayObject, DisplayObject } from "./display";
 
 interface Sprite extends DisplayObject {
-  image: HTMLImageElement;
+  image: CanvasImageSource;
 }
 
-type SpriteProps = Partial<Pick<DisplayObject, "x" | "y" | "pivotX" | "pivotY" | "rotation" | "scaleX" | "scaleY">>;
+type SpriteProps = Partial<
+  Pick<
+    DisplayObject,
+    "x" | "y" | "width" | "height" | "border" | "pivotX" | "pivotY" | "rotation" | "scaleX" | "scaleY"
+  >
+>;
 
-export const createSpite = (image: HTMLImageElement, props?: SpriteProps): Sprite => {
-  const sprite = createDisplayObject(
-    {
-      ...props,
-      width: image.width,
-      height: image.height,
-      render(context: CanvasRenderingContext2D) {
-        context.drawImage(
-          sprite.image,
-          0,
-          0,
-          sprite.width,
-          sprite.height,
-          -sprite.width * sprite.pivotX,
-          -sprite.height * sprite.pivotY,
-          sprite.width,
-          sprite.height
-        );
+export const createSpite = (image: CanvasImageSource, props?: SpriteProps): Sprite => {
+  const imageWidth = <number>image.width,
+    imageHeight = <number>image.height,
+    sprite = createDisplayObject(
+      {
+        width: imageWidth,
+        height: imageHeight,
+        ...props,
+        render(context: CanvasRenderingContext2D) {
+          context.drawImage(
+            sprite.image,
+            0,
+            0,
+            imageWidth,
+            imageHeight,
+            -imageWidth * sprite.pivotX,
+            -imageHeight * sprite.pivotY,
+            imageWidth,
+            imageHeight
+          );
+        }
+      },
+      {
+        image
       }
-    },
-    {
-      image
-    }
-  );
+    );
+  if (sprite.border > 0) {
+    sprite.width -= sprite.border * 2;
+    sprite.height -= sprite.border * 2;
+  }
   return sprite;
 };

@@ -1,17 +1,15 @@
 import { addGameObjectComponent } from "./components";
 import { createSpite } from "./core/sprite";
 import { createStage } from "./core/stage";
+import { processImage } from "./utils";
 
-export const createGame = (
-  canvas: HTMLCanvasElement,
-  context: CanvasRenderingContext2D,
-  heroImage: HTMLImageElement
-) => {
+export const createGame = (canvas: HTMLCanvasElement, context: CanvasRenderingContext2D, image: HTMLImageElement) => {
   const stage = createStage(canvas);
 
-  // context.imageSmoothingEnabled = false;
-
-  const heroSprite = createSpite(heroImage, { x: 100, y: 100, scaleX: 4, scaleY: 4 });
+  const scale = 4,
+    border = 1;
+  const heroImage = processImage(image, scale, border, 0xff00ff);
+  const heroSprite = createSpite(heroImage, { border, pivotX: 0.5, pivotY: 0.5 });
   const hero = addGameObjectComponent(heroSprite);
   stage.addChild(hero);
 
@@ -21,12 +19,20 @@ export const createGame = (
     update(dt: number) {
       stage.update();
 
-      if (isRightKeyDown) {
+      if (right) {
         hero.accX = 0.1;
-      } else if (isLeftKeyDown) {
+      } else if (left) {
         hero.accX = -0.1;
       } else {
         hero.accX = 0;
+      }
+
+      if (up) {
+        hero.accY = -0.1;
+      } else if (down) {
+        hero.accY = 0.1;
+      } else {
+        hero.accY = 0;
       }
 
       hero.vx += hero.accX;
@@ -37,6 +43,11 @@ export const createGame = (
 
       hero.x += hero.vx;
       hero.y += hero.vy;
+
+      if (hero.x < 0) hero.x = 0;
+      if (hero.y < 0) hero.y = 0;
+      if (hero.x + hero.width > stage.width) hero.x = stage.width - hero.width;
+      if (hero.y + hero.height > stage.height) hero.y = stage.height - hero.height;
     },
     render() {
       context.fillStyle = "0";

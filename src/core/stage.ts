@@ -15,7 +15,10 @@ export const createStage = (canvas: HTMLCanvasElement): Stage => {
         stage.children.forEach((obj) => {
           context.save();
 
-          context.translate(obj.x + obj.width * obj.pivotX, obj.y + obj.height * obj.pivotY);
+          context.translate(
+            obj.x - obj.border + (obj.width + obj.border * 2) * obj.pivotX,
+            obj.y - obj.border + (obj.height + obj.border * 2) * obj.pivotY
+          );
           context.rotate(obj.rotation);
           context.scale(obj.scaleX, obj.scaleY);
 

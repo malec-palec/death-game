@@ -5,20 +5,21 @@ export interface DisplayObject {
   stage?: Stage;
   x: number;
   y: number;
+  width: number;
+  height: number;
+  border: number;
   pivotX: number;
   pivotY: number;
   rotation: number;
   scaleX: number;
   scaleY: number;
-  width: number;
-  height: number;
   update(): void;
   render(context: CanvasRenderingContext2D): void;
 }
 
 type DisplayObjectProps = MakeOptional<
   DisplayObject,
-  "x" | "y" | "pivotX" | "pivotY" | "scaleX" | "scaleY" | "rotation" | "update"
+  "x" | "y" | "border" | "pivotX" | "pivotY" | "rotation" | "scaleX" | "scaleY" | "update"
 >;
 
 export const createDisplayObject = <T extends { [prop: string]: any }>(
@@ -27,6 +28,7 @@ export const createDisplayObject = <T extends { [prop: string]: any }>(
 ): DisplayObject & T => ({
   x: 0,
   y: 0,
+  border: 0,
   pivotX: 0,
   pivotY: 0,
   rotation: 0,

@@ -1,38 +1,45 @@
 const LEFT = 37;
 const RIGHT = 39;
 const UP = 38;
+const DOWN = 40;
 const SPACE = 32;
 
-isLeftKeyDown = isRightKeyDown = isUpKeyDown = isSpaceDown = false;
+left = right = up = down = space = false;
 
 onkeydown = (event: KeyboardEvent) => {
   const code = event.keyCode;
   if (code === LEFT) {
-    isLeftKeyDown = true;
+    left = true;
   }
   if (code === RIGHT) {
-    isRightKeyDown = true;
+    right = true;
   }
   if (code === UP) {
-    isUpKeyDown = true;
+    up = true;
+  }
+  if (code === DOWN) {
+    down = true;
   }
   if (code === SPACE) {
-    isSpaceDown = true;
+    space = true;
   }
 };
 
 onkeyup = (event: KeyboardEvent) => {
   const code = event.keyCode;
   if (code === LEFT) {
-    isLeftKeyDown = false;
+    left = false;
   }
   if (code === RIGHT) {
-    isRightKeyDown = false;
+    right = false;
   }
   if (code === UP) {
-    isUpKeyDown = false;
+    up = false;
+  }
+  if (code === DOWN) {
+    down = false;
   }
   if (code === SPACE) {
-    isSpaceDown = false;
+    space = false;
   }
 };

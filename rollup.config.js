@@ -48,7 +48,7 @@ const props = [
   "addChild",
   "removeChild"
 ];
-const regex = new RegExp(`${props.join("|")}`);
+const regex = new RegExp(`${props.map((x) => `\\b${x}\\b`).join("|")}`, "g");
 
 function releaseBuild() {
   return {
@@ -66,7 +66,7 @@ function releaseBuild() {
       }),
       nodeResolve(),
       commonjs(),
-      terser({ ecma: 2017, mangle: { properties: { builtins: true, regex } } }),
+      terser({ ecma: 2017 }), // mangle: { properties: { builtins: true, regex } }
       fileSize(),
       createHtmlPlugin(
         "src/index.mustache",
@@ -76,12 +76,7 @@ function releaseBuild() {
         [
           ["const", "let"],
           ["===", "=="],
-          [/\bforEach\b/g, "map"],
-          // globals
-          ["isLeftKeyDown", "left"],
-          ["isRightKeyDown", "right"],
-          ["isUpKeyDown", "up"],
-          ["isSpaceDown", "space"]
+          [/\bforEach\b/g, "map"]
         ]
       )
     ]
