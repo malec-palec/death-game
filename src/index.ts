@@ -1,20 +1,26 @@
-import HERO_URL from "./assets/hero.png";
+import HERO_URL from "./assets/test.png";
 import "./core/keyboard";
+import { initRenderer } from "./core/renderer";
 import { createGame } from "./game";
 import { loadImage } from "./loader";
+import { getContext2D } from "./utils";
 
 const main = async () => {
-  const heroImage = await loadImage(HERO_URL);
+  const testImage = await loadImage(HERO_URL);
 
   const canvas = g;
-  const context = g.getContext("2d")!;
-  const game = createGame(canvas, context, heroImage);
+  canvas.style.display = "none";
+  const context = getContext2D(canvas);
+  const game = createGame(canvas, context, testImage);
+
+  const render = initRenderer(canvas);
 
   // TODO: fix step
   const loop = () => {
     requestAnimationFrame(loop);
     game.update(1000 / 60);
     game.render();
+    render(canvas);
   };
   loop();
 };

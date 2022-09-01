@@ -15,28 +15,77 @@ export interface DisplayObject {
   scaleY: number;
   update(): void;
   render(context: CanvasRenderingContext2D): void;
+  getGlobalX(): number;
+  getGlobalY(): number;
+  getHalfWidth(): number;
+  getHalfHeight(): number;
+  getCenterX(): number;
+  getCenterY(): number;
 }
 
+// TODO: replace with make some required, rest - optional
 type DisplayObjectProps = MakeOptional<
   DisplayObject,
-  "x" | "y" | "border" | "pivotX" | "pivotY" | "rotation" | "scaleX" | "scaleY" | "update"
+  | "x"
+  | "y"
+  | "border"
+  | "pivotX"
+  | "pivotY"
+  | "rotation"
+  | "scaleX"
+  | "scaleY"
+  | "update"
+  | "getGlobalX"
+  | "getGlobalY"
+  | "getHalfWidth"
+  | "getHalfHeight"
+  | "getCenterX"
+  | "getCenterY"
 >;
 
 export const createDisplayObject = <T extends { [prop: string]: any }>(
   props: DisplayObjectProps,
   add: T
-): DisplayObject & T => ({
-  x: 0,
-  y: 0,
-  border: 0,
-  pivotX: 0,
-  pivotY: 0,
-  rotation: 0,
-  scaleX: 1,
-  scaleY: 1,
-  update() {
-    // do nothing here
-  },
-  ...props,
-  ...add
-});
+): DisplayObject & T => {
+  const obj: DisplayObject = {
+    x: 0,
+    y: 0,
+    border: 0,
+    pivotX: 0,
+    pivotY: 0,
+    rotation: 0,
+    scaleX: 1,
+    scaleY: 1,
+    update() {
+      // do nothing here
+    },
+    getGlobalX(): number {
+      if (obj.stage) {
+        return obj.x + obj.stage.getGlobalX();
+      } else {
+        return obj.x;
+      }
+    },
+    getGlobalY(): number {
+      if (obj.stage) {
+        return obj.y + obj.stage.getGlobalY();
+      } else {
+        return obj.y;
+      }
+    },
+    getHalfWidth(): number {
+      return obj.width / 2;
+    },
+    getHalfHeight(): number {
+      return obj.height / 2;
+    },
+    getCenterX(): number {
+      return obj.x + obj.getHalfWidth();
+    },
+    getCenterY(): number {
+      return obj.y + obj.getHalfHeight();
+    },
+    ...props
+  };
+  return Object.assign(obj, add);
+};

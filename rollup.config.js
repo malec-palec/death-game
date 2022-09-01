@@ -46,9 +46,10 @@ const props = [
   "image",
   "children",
   "addChild",
-  "removeChild"
+  "removeChild",
+  "border"
 ];
-const regex = new RegExp(`${props.map((x) => `\\b${x}\\b`).join("|")}`, "g");
+const regex = new RegExp(`${props.map((x) => `\\.${x}`).join("|")}`, "g");
 
 function releaseBuild() {
   return {

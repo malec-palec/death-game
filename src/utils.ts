@@ -1,17 +1,20 @@
+export const createNewCanvas = () => document.createElement("canvas");
+export const getContext2D = (canvas: HTMLCanvasElement) => canvas.getContext("2d")!;
+
 export const processImage = (
   image: HTMLImageElement,
   scale: number,
   border = 0,
   color = 0xffffff
 ): HTMLCanvasElement => {
-  const canvas = document.createElement("canvas"),
+  const canvas = createNewCanvas(),
     width = (canvas.width = image.width),
     height = (canvas.height = image.height),
     r = (color >> 16) & 0xff,
     g = (color >> 8) & 0xff,
     b = color & 0xff,
-    anotherCanvas = document.createElement("canvas");
-  let ctx = canvas.getContext("2d")!,
+    anotherCanvas = createNewCanvas();
+  let ctx = getContext2D(canvas),
     minX = width,
     minY = height,
     maxX = 0,
@@ -44,7 +47,7 @@ export const processImage = (
 
   anotherCanvas.width = (maxX - minX + 1) * scale + border * 2;
   anotherCanvas.height = (maxY - minY + 1) * scale + border * 2;
-  ctx = anotherCanvas.getContext("2d")!;
+  ctx = getContext2D(anotherCanvas);
 
   // draw bounds
   // ctx.fillStyle = "yellow";

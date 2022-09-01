@@ -1,10 +1,10 @@
 import { createDisplayObject, DisplayObject } from "./display";
 
-interface Sprite extends DisplayObject {
+export interface Sprite extends DisplayObject {
   image: CanvasImageSource;
 }
 
-type SpriteProps = Partial<
+export type SpriteProps = Partial<
   Pick<
     DisplayObject,
     "x" | "y" | "width" | "height" | "border" | "pivotX" | "pivotY" | "rotation" | "scaleX" | "scaleY"
