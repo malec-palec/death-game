@@ -4,6 +4,7 @@ import json from "@rollup/plugin-json";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import typescript from "@rollup/plugin-typescript";
 import url from "@rollup/plugin-url";
+import copy from "rollup-plugin-copy";
 import del from "rollup-plugin-delete";
 import fileSize from "rollup-plugin-filesize";
 import { terser } from "rollup-plugin-terser";
@@ -19,17 +20,30 @@ function debugBuild() {
     input: "src/index.ts",
     output: {
       file: "dist/bundle.js",
-      format: "es",
-      sourcemap: "inline"
+      format: "iife",
+      sourcemap: "inline",
+      globals: {
+        "dat.gui": "dat"
+      }
     },
     plugins: [
       del({ targets: "dist/*", verbose: true, runOnce: true }),
+      copy({
+        targets: [
+          {
+            src: ["node_modules/dat.gui/build/dat.gui.js", "node_modules/dat.gui/build/dat.gui.js.map"],
+            dest: "dist/lib"
+          }
+        ],
+        verbose: true,
+        runOnce: true
+      }),
       ...commonPlugins,
       url({
         limit: 0,
         fileName: "[dirname][name][extname]"
       }),
-      createHtmlPlugin("src/index.mustache", "bundle.js", true)
+      createHtmlPlugin("src/index.mustache", "bundle.js", true, ["lib/dat.gui.js"])
     ]
   };
 }

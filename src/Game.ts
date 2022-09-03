@@ -1,5 +1,6 @@
 import { addComponents, GameObjectComponent, getGameObjectComponent } from "./components";
 import { DisplayObject } from "./core/display";
+import keys from "./core/keyboard";
 import { createRectShape, Shape } from "./core/shape";
 import { createStage, Stage } from "./core/stage";
 
@@ -7,8 +8,8 @@ export const createGame = (canvas: HTMLCanvasElement, context: CanvasRenderingCo
   const stage = createStage(canvas);
 
   const level = {
-    widthInTiles: 15,
-    heightInTiles: 10,
+    widthInTiles: 16,
+    heightInTiles: 12,
     tilewidth: 40,
     tileheight: 40
   };
@@ -26,15 +27,15 @@ export const createGame = (canvas: HTMLCanvasElement, context: CanvasRenderingCo
     update(dt: number) {
       stage.update();
 
-      if (left) {
+      if (keys.isLeftKeyDown) {
         player.accX = -0.2;
-      } else if (right) {
+      } else if (keys.isRightKeyDown) {
         player.accX = 0.2;
       } else {
         player.accX = 0;
       }
 
-      if (space) {
+      if (keys.isSpaceDown) {
         if (player.isOnGround) {
           player.vy += player.jumpForce;
           player.isOnGround = false;

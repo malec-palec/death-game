@@ -4,7 +4,11 @@ const UP = 38;
 const DOWN = 40;
 const SPACE = 32;
 
-left = right = up = down = space = false;
+let left = false,
+  right = false,
+  up = false,
+  down = false,
+  space = false;
 
 onkeydown = (event: KeyboardEvent) => {
   const code = event.keyCode;
@@ -41,5 +45,23 @@ onkeyup = (event: KeyboardEvent) => {
   }
   if (code === SPACE) {
     space = false;
+  }
+};
+
+export default {
+  get isLeftKeyDown() {
+    return left;
+  },
+  get isRightKeyDown() {
+    return right;
+  },
+  get isUpKeyDown() {
+    return up;
+  },
+  get isDownKeyDown() {
+    return down;
+  },
+  get isSpaceDown() {
+    return space;
   }
 };
