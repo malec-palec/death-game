@@ -20,6 +20,7 @@ export const createStage = (canvas: HTMLCanvasElement): Stage => {
             obj.y - obj.border + (obj.height + obj.border * 2) * obj.pivotY
           );
           context.rotate(obj.rotation);
+          // TODO: add alpha support
           context.scale(obj.scaleX, obj.scaleY);
 
           obj.render(context);

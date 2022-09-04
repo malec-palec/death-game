@@ -7,6 +7,7 @@ import url from "@rollup/plugin-url";
 import copy from "rollup-plugin-copy";
 import del from "rollup-plugin-delete";
 import fileSize from "rollup-plugin-filesize";
+import glslify from "rollup-plugin-glslify";
 import { terser } from "rollup-plugin-terser";
 import createHtml from "./lib/create-html.js";
 import mangle from "./lib/mangle.js";
@@ -14,7 +15,7 @@ import mangle from "./lib/mangle.js";
 const devMode = process.env.NODE_ENV !== "production";
 console.log(`${devMode ? "development" : "production"} mode bundle`);
 
-const commonPlugins = [typescript(), json()];
+const commonPlugins = [typescript(), json(), glslify()];
 
 function debugBuild() {
   return {

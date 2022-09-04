@@ -3,12 +3,11 @@ import { hitTestRectangle, rectangleCollision } from "./collision";
 import keys from "./core/keyboard";
 import { createStage } from "./core/stage";
 import { makeWorld } from "./level";
+import { getContext2D } from "./utils";
 
-export const createGame = (
-  canvas: HTMLCanvasElement,
-  context: CanvasRenderingContext2D,
-  assets: Array<HTMLCanvasElement>
-) => {
+export const createGame = (canvas: HTMLCanvasElement, assets: Array<HTMLCanvasElement>) => {
+  const context = getContext2D(canvas)!;
+
   const stage = createStage(canvas);
 
   const level = {
