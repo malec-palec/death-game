@@ -11,7 +11,7 @@ const clearOut = () => fs.emptyDir("./out");
 
 const zipOut = () =>
   gulp
-    .src("./dist/*")
+    .src(["./dist/*", "!./dist/*.json"])
     .pipe(size({ showFiles: true }))
     .pipe(zip(zipFile))
     .pipe(size({ showFiles: true }))

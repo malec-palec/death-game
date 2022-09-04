@@ -8,7 +8,8 @@ import copy from "rollup-plugin-copy";
 import del from "rollup-plugin-delete";
 import fileSize from "rollup-plugin-filesize";
 import { terser } from "rollup-plugin-terser";
-import createHtmlPlugin from "./lib/create-html.js";
+import createHtml from "./lib/create-html.js";
+import mangle from "./lib/mangle.js";
 
 const devMode = process.env.NODE_ENV !== "production";
 console.log(`${devMode ? "development" : "production"} mode bundle`);
@@ -43,27 +44,51 @@ function debugBuild() {
         limit: 0,
         fileName: "[dirname][name][extname]"
       }),
-      createHtmlPlugin("src/index.mustache", "bundle.js", true, ["lib/dat.gui.js"])
+      createHtml("src/index.mustache", "bundle.js", true, ["lib/dat.gui.js"])
     ]
   };
 }
 
-const props = [
-  "stage",
+const propsToMangle = [
+  "isRightKeyDown",
+  "isLeftKeyDown",
+  "isDownKeyDown",
+  "getHalfHeight",
+  "itemLocations",
+  "heightInTiles",
+  "getHalfWidth",
+  "widthInTiles",
+  "isUpKeyDown",
+  "isSpaceDown",
+  "removeChild",
+  "getGlobalX",
+  "getGlobalY",
+  "getCenterX",
+  "getCenterY",
+  "tileheight",
+  "isOnGround",
+  "platforms",
+  "tilewidth",
+  "frictionX",
+  "frictionY",
+  "jumpForce",
+  "rotation",
+  "children",
+  "addChild",
+  "terrain",
+  "gravity",
   "pivotX",
   "pivotY",
-  "rotation",
   "scaleX",
   "scaleY",
   "update",
   "render",
-  "image",
-  "children",
-  "addChild",
-  "removeChild",
-  "border"
+  "stage",
+  "color",
+  "item",
+  "accX",
+  "accY"
 ];
-const regex = new RegExp(`${props.map((x) => `\\.${x}`).join("|")}`, "g");
 
 function releaseBuild() {
   return {
@@ -81,19 +106,10 @@ function releaseBuild() {
       }),
       nodeResolve(),
       commonjs(),
-      terser({ ecma: 2017 }), // mangle: { properties: { builtins: true, regex } }
+      mangle("bundle.js", propsToMangle),
+      terser({ ecma: 2017 }),
       fileSize(),
-      createHtmlPlugin(
-        "src/index.mustache",
-        "bundle.js",
-        false,
-        [],
-        [
-          ["const", "let"],
-          ["===", "=="],
-          [/\bforEach\b/g, "map"]
-        ]
-      )
+      createHtml("src/index.mustache", "bundle.js")
     ]
   };
 }

@@ -1,5 +1,7 @@
 export const createNewCanvas = () => document.createElement("canvas");
 export const getContext2D = (canvas: HTMLCanvasElement) => canvas.getContext("2d")!;
+// export const setFillStyle = (ctx: CanvasRenderingContext2D, color: string) => (ctx.fillStyle = color);
+// export const objectAssign = Object.assign; // bind ?
 
 export const processImage = (
   image: HTMLImageElement,

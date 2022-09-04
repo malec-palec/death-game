@@ -59,6 +59,10 @@ export const createGame = (canvas: HTMLCanvasElement, context: CanvasRenderingCo
       player.x += player.vx;
       player.y += player.vy;
 
+      // Make it work with existing collision system by adding safe area on sides
+      // if (player.x + player.getHalfWidth() > stage.width) player.x = -player.getHalfWidth();
+      // if (player.x + player.getHalfWidth() < 0) player.x = stage.width - player.getHalfWidth();
+
       world.platforms.forEach((platform) => {
         const collision = rectangleCollision(player, platform);
         if (collision) {
@@ -77,6 +81,11 @@ export const createGame = (canvas: HTMLCanvasElement, context: CanvasRenderingCo
           }
         }
       });
+
+      if (player.x < 0) player.x = 0;
+      if (player.y < 0) player.y = 0;
+      if (player.x + player.width > stage.width) player.x = stage.width - player.width;
+      if (player.y + player.height > stage.height) player.y = stage.height - player.height;
 
       world.treasure = world.treasure.filter((box) => {
         if (hitTestRectangle(player, box)) {
@@ -188,7 +197,7 @@ function makeWorld(
         cellAbove = world.map[getIndex(cell.x, cell.y - 1)],
         cellTwoAbove = world.map[getIndex(cell.x, cell.y - 2)];
 
-      if (cell.x === 0 || cell.y === 0 || cell.x === level.widthInTiles - 1 || cell.y === level.heightInTiles - 1) {
+      if (cell.y === level.heightInTiles - 1) {
         cell.terrain = "border";
       } else {
         if (cell.terrain === "rock") {
