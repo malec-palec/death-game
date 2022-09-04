@@ -1,4 +1,4 @@
-import { createNewCanvas, getContext2D, shuffle } from "./utils";
+import { shuffle } from "./utils";
 
 export const WALL_0 = 0;
 export const WALL_1 = 1;
@@ -35,11 +35,11 @@ const processTile = (
   cropAlpha = true,
   border = 0
 ): HTMLCanvasElement => {
-  const canvas = createNewCanvas(),
-    scaledCanvas = createNewCanvas(),
+  const canvas = document.createElement("canvas"),
+    scaledCanvas = document.createElement("canvas"),
     scaledSize = size * scale;
   canvas.width = canvas.height = size;
-  let ctx = getContext2D(canvas),
+  let ctx = canvas.getContext("2d")!,
     x: number,
     y: number,
     i: number,
@@ -78,7 +78,7 @@ const processTile = (
     scaledCanvas.width = scaledCanvas.height = scaledSize;
   }
 
-  ctx = getContext2D(scaledCanvas);
+  ctx = scaledCanvas.getContext("2d")!;
   ctx.imageSmoothingEnabled = false;
 
   // ctx.fillStyle = "red";
