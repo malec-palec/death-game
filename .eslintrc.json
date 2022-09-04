@@ -10,7 +10,8 @@
   "rules": {
     "no-console": 1,
     "@typescript-eslint/no-unused-vars": [1, { "args": "none" }],
-    "@typescript-eslint/no-non-null-assertion": 0
+    "@typescript-eslint/no-non-null-assertion": 0,
+    "no-sparse-arrays": 0
   },
   "plugins": ["@typescript-eslint"],
   "parserOptions": {

@@ -53,6 +53,7 @@
   },
   "type": "module",
   "dependencies": {
-    "dat.gui": "^0.7.9"
+    "dat.gui": "^0.7.9",
+    "zzfx": "^1.1.8"
   }
 }

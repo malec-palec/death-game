@@ -13,4 +13,8 @@ declare module "*.frag" {
   export default shader;
 }
 
+declare module "zzfx" {
+  export function zzfx(...parameters: (number | undefined)[]): AudioBufferSourceNode;
+}
+
 declare const g: HTMLCanvasElement; // game

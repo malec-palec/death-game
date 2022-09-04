@@ -5035,3 +5035,8 @@ yocto-queue@^0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/yocto-queue/-/yocto-queue-0.1.0.tgz#0294eb3dee05028d31ee1a5fa2c556a6aaf10a1b"
   integrity sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==
+
+zzfx@^1.1.8:
+  version "1.1.8"
+  resolved "https://registry.yarnpkg.com/zzfx/-/zzfx-1.1.8.tgz#54eda31d482d00b3ab45c636be588e57ef50ba0b"
+  integrity sha512-4HWCIuYV3ThQjgQScb6q8izG2S7lT+fdaWxQ2nYG0A/9+lBExsvP2f3gsoFoGnBEQItO/usoY/6RYkIx93JATg==
