@@ -3,6 +3,7 @@ import { hitTestRectangle, rectangleCollision } from "./collision";
 import keys from "./core/keyboard";
 import { createStage } from "./core/stage";
 import { makeWorld } from "./level";
+import { playJumpSound } from "./sounds";
 
 export const createGame = (canvas: HTMLCanvasElement, assets: Array<HTMLCanvasElement>) => {
   const context = canvas.getContext("2d")!;
@@ -34,6 +35,7 @@ export const createGame = (canvas: HTMLCanvasElement, assets: Array<HTMLCanvasEl
 
       if (keys.isSpaceDown) {
         if (player.isOnGround) {
+          playJumpSound();
           player.vy += player.jumpForce;
           player.isOnGround = false;
           player.frictionX = 1;
