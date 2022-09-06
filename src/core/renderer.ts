@@ -14,6 +14,8 @@ export const initRenderer = (targetCanvas: HTMLCanvasElement) => {
   canvas.height = targetCanvas.clientHeight;
 
   const gl = canvas.getContext("webgl")!,
+    GL_FRAMEBUFFER = gl.FRAMEBUFFER,
+    glGetUniformLocation = gl.getUniformLocation.bind(gl),
     targetContext = targetCanvas.getContext("2d")!;
 
   targetCanvas.parentNode!.insertBefore(canvas, targetCanvas);
@@ -23,7 +25,7 @@ export const initRenderer = (targetCanvas: HTMLCanvasElement) => {
       for (let i = 0; i < args.length; ++i) {
         const arg = args[i];
         switch (arg) {
-          case gl.FRAMEBUFFER:
+          case GL_FRAMEBUFFER:
             gl.bindFramebuffer(arg, null);
             break;
           case gl.TEXTURE_2D:
@@ -68,27 +70,27 @@ export const initRenderer = (targetCanvas: HTMLCanvasElement) => {
 
   const crt_program = createProgram(vs, fs_crt, "crt_program"),
     loc_crt_pos = gl.getAttribLocation(crt_program, "pos"),
-    loc_crt_time = gl.getUniformLocation(crt_program, "time"),
-    loc_crt_backbuffer = gl.getUniformLocation(crt_program, "backbuffer"),
-    loc_crt_blurbuffer = gl.getUniformLocation(crt_program, "blurbuffer"),
-    loc_crt_resolution = gl.getUniformLocation(crt_program, "resolution"),
+    loc_crt_time = glGetUniformLocation(crt_program, "time"),
+    loc_crt_backbuffer = glGetUniformLocation(crt_program, "backbuffer"),
+    loc_crt_blurbuffer = glGetUniformLocation(crt_program, "blurbuffer"),
+    loc_crt_resolution = glGetUniformLocation(crt_program, "resolution"),
     blur_program = createProgram(vs, fs_blur, "blur_program"),
     loc_blur_pos = gl.getAttribLocation(blur_program, "pos"),
-    loc_blur_blur = gl.getUniformLocation(blur_program, "blur"),
-    loc_blur_texture = gl.getUniformLocation(blur_program, "texture"),
+    loc_blur_blur = glGetUniformLocation(blur_program, "blur"),
+    loc_blur_texture = glGetUniformLocation(blur_program, "texture"),
     accumulate_program = createProgram(vs, fs_accumulate, "accumulate_program"),
     loc_accumulate_pos = gl.getAttribLocation(accumulate_program, "pos"),
-    loc_accumulate_tex0 = gl.getUniformLocation(accumulate_program, "tex0"),
-    loc_accumulate_tex1 = gl.getUniformLocation(accumulate_program, "tex1"),
-    loc_accumulate_modulate = gl.getUniformLocation(accumulate_program, "modulate"),
+    loc_accumulate_tex0 = glGetUniformLocation(accumulate_program, "tex0"),
+    loc_accumulate_tex1 = glGetUniformLocation(accumulate_program, "tex1"),
+    loc_accumulate_modulate = glGetUniformLocation(accumulate_program, "modulate"),
     blend_program = createProgram(vs, fs_blend, "blend_program"),
     loc_blend_pos = gl.getAttribLocation(blend_program, "pos"),
-    loc_blend_tex0 = gl.getUniformLocation(blend_program, "tex0"),
-    loc_blend_tex1 = gl.getUniformLocation(blend_program, "tex1"),
-    loc_blend_modulate = gl.getUniformLocation(blend_program, "modulate"),
+    loc_blend_tex0 = glGetUniformLocation(blend_program, "tex0"),
+    loc_blend_tex1 = glGetUniformLocation(blend_program, "tex1"),
+    loc_blend_modulate = glGetUniformLocation(blend_program, "modulate"),
     copy_program = createProgram(vs, fs_copy, "copy_program"),
     loc_copy_pos = gl.getAttribLocation(copy_program, "pos"),
-    loc_copy_tex0 = gl.getUniformLocation(copy_program, "tex0"),
+    loc_copy_tex0 = glGetUniformLocation(copy_program, "tex0"),
     posBuffer = gl.createBuffer();
 
   gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
@@ -132,7 +134,7 @@ export const initRenderer = (targetCanvas: HTMLCanvasElement) => {
     accum_buf = texFbos[2],
     accum_cpy = texFbos[3],
     drawBlurAxis = (srcTex: WebGLTexture, dstBuf: WebGLFramebuffer, blurX: number, blurY: number) => {
-      gl.bindFramebuffer(gl.FRAMEBUFFER, dstBuf);
+      gl.bindFramebuffer(GL_FRAMEBUFFER, dstBuf);
       gl.useProgram(blur_program);
       bindVertexBuffer(loc_blur_pos);
       gl.uniform2f(loc_blur_blur, blurX, blurY);
@@ -140,21 +142,21 @@ export const initRenderer = (targetCanvas: HTMLCanvasElement) => {
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, srcTex);
       gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-      unbind(gl.TEXTURE_2D, gl.ARRAY_BUFFER, gl.FRAMEBUFFER);
+      unbind(gl.TEXTURE_2D, gl.ARRAY_BUFFER, GL_FRAMEBUFFER);
     },
     drawBlur = (srcTex: WebGLTexture, dstBuf: WebGLFramebuffer, tmp: TexFbo, r: number, w: number, h: number) => {
       drawBlurAxis(srcTex, tmp.fbo, r / w, 0);
       drawBlurAxis(tmp.tex, dstBuf, 0, r / h);
     },
     drawCopy = (srcTex: WebGLTexture, dstBuf: WebGLFramebuffer) => {
-      gl.bindFramebuffer(gl.FRAMEBUFFER, dstBuf);
+      gl.bindFramebuffer(GL_FRAMEBUFFER, dstBuf);
       gl.useProgram(copy_program);
       bindVertexBuffer(loc_copy_pos);
       gl.uniform1i(loc_copy_tex0, 0);
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, srcTex);
       gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-      unbind(gl.TEXTURE_2D, gl.ARRAY_BUFFER, gl.FRAMEBUFFER);
+      unbind(gl.TEXTURE_2D, gl.ARRAY_BUFFER, GL_FRAMEBUFFER);
     };
 
   let lastDw = -1,
@@ -181,9 +183,9 @@ export const initRenderer = (targetCanvas: HTMLCanvasElement) => {
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, texture);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, dw, dh, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-        unbind(gl.TEXTURE_2D, gl.FRAMEBUFFER);
+        gl.bindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+        gl.framebufferTexture2D(GL_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+        unbind(gl.TEXTURE_2D, GL_FRAMEBUFFER);
       }
     }
 
@@ -199,7 +201,7 @@ export const initRenderer = (targetCanvas: HTMLCanvasElement) => {
     drawBlur(accum_cpy.tex, blur_buf.fbo, blur_tmp, 1.0, dw, dh);
 
     /* update accumulation buffer; accum_buf = accumulate(backbuffer, blur_buf) */
-    gl.bindFramebuffer(gl.FRAMEBUFFER, accum_buf.fbo);
+    gl.bindFramebuffer(GL_FRAMEBUFFER, accum_buf.fbo);
     gl.useProgram(accumulate_program);
     bindVertexBuffer(loc_accumulate_pos);
     gl.uniform1i(loc_accumulate_tex0, 0);
@@ -210,13 +212,13 @@ export const initRenderer = (targetCanvas: HTMLCanvasElement) => {
     gl.activeTexture(gl.TEXTURE1);
     gl.bindTexture(gl.TEXTURE_2D, blur_buf.tex);
     gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-    unbind(gl.TEXTURE0, gl.TEXTURE1, gl.ARRAY_BUFFER, gl.FRAMEBUFFER);
+    unbind(gl.TEXTURE0, gl.TEXTURE1, gl.ARRAY_BUFFER, GL_FRAMEBUFFER);
 
     /* store copy of accumulation buffer; accum_cpy = copy(accum_buf) */
     drawCopy(accum_buf.tex, accum_cpy.fbo);
 
     /* blend accumulation and backbuffer; accum_buf = blend(backbuffer, accum_cpy) */
-    gl.bindFramebuffer(gl.FRAMEBUFFER, accum_buf.fbo);
+    gl.bindFramebuffer(GL_FRAMEBUFFER, accum_buf.fbo);
     gl.useProgram(blend_program);
     bindVertexBuffer(loc_blend_pos);
     gl.uniform1i(loc_blend_tex0, 0);
@@ -227,7 +229,7 @@ export const initRenderer = (targetCanvas: HTMLCanvasElement) => {
     gl.activeTexture(gl.TEXTURE1);
     gl.bindTexture(gl.TEXTURE_2D, accum_cpy.tex);
     gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-    unbind(gl.TEXTURE0, gl.TEXTURE1, gl.ARRAY_BUFFER, gl.FRAMEBUFFER);
+    unbind(gl.TEXTURE0, gl.TEXTURE1, gl.ARRAY_BUFFER, GL_FRAMEBUFFER);
 
     /* add slight blur to backbuffer; accum_buf = blur(accum_buf) */
     drawBlur(accum_buf.tex, accum_buf.fbo, blur_tmp, 0.17, dw, dh);
@@ -241,7 +243,7 @@ export const initRenderer = (targetCanvas: HTMLCanvasElement) => {
     gl.viewport(0, 0, cw, ch);
 
     /* apply crt shader; canvas = crt(accum_buf, blur_buf) */
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.bindFramebuffer(GL_FRAMEBUFFER, null);
     gl.useProgram(crt_program);
     bindVertexBuffer(loc_crt_pos);
     gl.activeTexture(gl.TEXTURE0);
@@ -253,7 +255,7 @@ export const initRenderer = (targetCanvas: HTMLCanvasElement) => {
     gl.uniform1i(loc_crt_backbuffer, 0);
     gl.uniform1i(loc_crt_blurbuffer, 1);
     gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
-    unbind(gl.TEXTURE0, gl.TEXTURE1, gl.ARRAY_BUFFER, gl.FRAMEBUFFER);
+    unbind(gl.TEXTURE0, gl.TEXTURE1, gl.ARRAY_BUFFER, GL_FRAMEBUFFER);
 
     lastDw = dw;
     lastDh = dh;

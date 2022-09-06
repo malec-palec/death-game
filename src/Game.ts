@@ -2,11 +2,15 @@ import { BG_COLOR } from "./assets";
 import { hitTestRectangle, rectangleCollision } from "./collision";
 import keys from "./core/keyboard";
 import { createStage } from "./core/stage";
+import { initFont } from "./font";
+import { font } from "./font/pixel";
 import { makeWorld } from "./level";
 import { playJumpSound } from "./sounds";
 
 export const createGame = (canvas: HTMLCanvasElement, assets: Array<HTMLCanvasElement>) => {
   const context = canvas.getContext("2d")!;
+
+  const writeLine = initFont(font, context)!;
 
   const stage = createStage(canvas);
 
@@ -102,6 +106,8 @@ export const createGame = (canvas: HTMLCanvasElement, assets: Array<HTMLCanvasEl
       context.fillRect(0, 0, stage.width, stage.height);
 
       stage.render(context);
+
+      writeLine("DEATH 13", 45, 45, 30, "white");
     }
   };
 };
