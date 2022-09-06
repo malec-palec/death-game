@@ -5,15 +5,21 @@ export const WALL_1 = 1;
 export const WALL_2 = 2;
 export const DOOR = 3;
 export const CHEST = 4;
-export const HERO = 5;
+export const SCULL = 5;
+export const HERO = 6;
+export const SNAKE = 7;
+export const BAT = 8;
 
 const GROUP_SCALE_CROP = DOOR,
-  GROUP_BORDER = HERO;
+  GROUP_ADD_BORDER = HERO;
 
 export const TILE_SIZE = 10;
 export const TILE_SCALE = 4;
 export const ITEM_SCALE = 3;
 export const BORDER_SIZE = 2;
+
+export const ASSETS_SCALED_TILE_SIZE = TILE_SIZE * TILE_SCALE;
+export const ASSETS_SCALED_ITEM_SIZE = TILE_SIZE * ITEM_SCALE;
 
 export const BG_COLOR = "#201208";
 
@@ -23,7 +29,8 @@ const GREY = 0x929992,
   BROWN_LIGHT = 0xcc8e4c,
   PURPLE = 0xe05ad1,
   GOLD = 0xf7c439,
-  BLOOD = 0xae3737;
+  BLOOD = 0xae3737,
+  WHITE = 0xffffff;
 
 const processTile = (
   image: HTMLImageElement,
@@ -102,6 +109,7 @@ export const createAssets = (atlas: HTMLImageElement): HTMLCanvasElement[] => {
   shuffle(colors);
   colors[HERO] = PURPLE;
   colors[CHEST] = GOLD;
+  colors[SCULL] = WHITE;
 
   let x: number, y: number, i: number;
   for (y = 0; y < cols; y++) {
@@ -116,7 +124,7 @@ export const createAssets = (atlas: HTMLImageElement): HTMLCanvasElement[] => {
         i < GROUP_SCALE_CROP ? TILE_SCALE : ITEM_SCALE,
         colors[i % colors.length],
         i >= GROUP_SCALE_CROP,
-        i < GROUP_BORDER ? 0 : BORDER_SIZE
+        i < GROUP_ADD_BORDER ? 0 : BORDER_SIZE
       );
     }
   }

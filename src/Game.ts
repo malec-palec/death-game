@@ -1,27 +1,30 @@
-import { BG_COLOR } from "./assets";
+import { ASSETS_SCALED_TILE_SIZE, BG_COLOR } from "./assets";
 import { hitTestRectangle, rectangleCollision } from "./collision";
 import keys from "./core/keyboard";
 import { createStage } from "./core/stage";
 import { initFont } from "./font";
 import { font } from "./font/pixel";
+import { createHUD } from "./hud";
 import { makeWorld } from "./level";
 import { playJumpSound } from "./sounds";
 
 export const createGame = (canvas: HTMLCanvasElement, assets: Array<HTMLCanvasElement>) => {
   const context = canvas.getContext("2d")!;
+  const writeLine: WriteLineFunc = initFont(font, context)!;
 
-  const writeLine = initFont(font, context)!;
-
-  const stage = createStage(canvas);
+  const stage = createStage(canvas, ASSETS_SCALED_TILE_SIZE),
+    hud = createHUD(stage.width, writeLine, assets);
 
   const level = {
     widthInTiles: 16,
-    heightInTiles: 12,
-    tilewidth: 40,
-    tileheight: 40
+    heightInTiles: 11,
+    tilewidth: ASSETS_SCALED_TILE_SIZE,
+    tileheight: ASSETS_SCALED_TILE_SIZE
   };
   const world = makeWorld(level, stage, assets);
   const player = world.player!;
+
+  let deaths = 0;
 
   return {
     update() {
@@ -39,6 +42,7 @@ export const createGame = (canvas: HTMLCanvasElement, assets: Array<HTMLCanvasEl
 
       if (keys.isSpaceDown) {
         if (player.isOnGround) {
+          hud.setDeathCount(++deaths);
           playJumpSound();
           player.vy += player.jumpForce;
           player.isOnGround = false;
@@ -106,8 +110,7 @@ export const createGame = (canvas: HTMLCanvasElement, assets: Array<HTMLCanvasEl
       context.fillRect(0, 0, stage.width, stage.height);
 
       stage.render(context);
-
-      writeLine("DEATH 13", 45, 45, 30, "white");
+      hud.render(context);
     }
   };
 };

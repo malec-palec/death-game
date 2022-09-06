@@ -1,6 +1,6 @@
 const initFont =
   (chars, ctx) =>
-  (string, x = 0, y = 0, size = 24, color = "0") => {
+  (string, x, y, size = 30, color = "#FFF") =>
     [...string].reduce((charX, char) => {
       const height = 5,
         pixelSize = size / height,
@@ -19,6 +19,4 @@ const initFont =
       );
       return charX + (width + 1) * pixelSize;
     }, 0);
-  };
-
 export { initFont };
