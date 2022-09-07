@@ -39,4 +39,4 @@ const writeLine: WriteLineFunc = initFont(font),
     return text;
   };
 
-export { createText };
+export { createText, writeLine };

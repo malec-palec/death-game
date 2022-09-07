@@ -64,7 +64,8 @@ export const makeWorld = (
         cellTwoAbove = world.map[getIndex(cell.x, cell.y - 2)];
 
       if (cell.x === 0 || cell.y === 0 || cell.x === level.widthInTiles - 1 || cell.y === level.heightInTiles - 1) {
-        cell.terrain = "border";
+        if (cell.y === 0) cell.terrain = "sky";
+        else cell.terrain = "border";
       } else {
         if (cell.terrain === "rock") {
           if (cellAbove && cellAbove.terrain === "sky") {

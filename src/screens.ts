@@ -5,6 +5,7 @@ import { createRectShape } from "./core/shape";
 import { createText } from "./core/text";
 import { smoothstep, tweenProp } from "./core/tween";
 import { Game } from "./game";
+import { createHUD } from "./hud";
 import { makeWorld } from "./level";
 import { playJumpSound } from "./sounds";
 
@@ -52,8 +53,10 @@ const TITLE_SCREEN = "title",
       },
       world = makeWorld(level, stage, assets),
       player = world.player!,
+      hud = createHUD(stage.width, assets),
       blank = createRectShape({ width: stage.width, height: stage.height, alpha: 1 }, BG_COLOR);
 
+    stage.addChild(hud);
     stage.addChild(blank);
     tweenProp(
       30,
@@ -64,7 +67,7 @@ const TITLE_SCREEN = "title",
       () => stage.removeChild(blank)
     );
 
-    // let deaths = 0;
+    let deaths = 0;
 
     return () => {
       if (isLeftKeyDown) {
@@ -79,7 +82,7 @@ const TITLE_SCREEN = "title",
 
       if (isSpaceDown) {
         if (player.isOnGround) {
-          // hud.setDeathCount(++deaths);
+          hud.setDeathCount(++deaths);
           playJumpSound();
           player.vy += player.jumpForce;
           player.isOnGround = false;
@@ -126,9 +129,9 @@ const TITLE_SCREEN = "title",
         }
       });
 
-      // if (player.x < 0) player.x = 0;
+      if (player.x < 0) player.x = 0;
+      if (player.x + player.width > stage.width) player.x = stage.width - player.width;
       // if (player.y < 0) player.y = 0;
-      // if (player.x + player.width > stage.width) player.x = stage.width - player.width;
       // if (player.y + player.height > stage.height) player.y = stage.height - player.height;
 
       world.treasure = world.treasure.filter((box) => {
