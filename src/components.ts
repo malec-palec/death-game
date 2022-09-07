@@ -8,18 +8,19 @@ export interface GameObjectComponent {
   accY: number;
 }
 
-type GameObjectProps = Partial<GameObjectComponent>;
+export type GameObjectProps = Partial<GameObjectComponent>;
 
-export const getGameObjectComponent = (props?: GameObjectProps): GameObjectComponent => ({
-  vx: 0,
-  vy: 0,
-  accX: 0,
-  accY: 0,
-  ...props
-});
+const getGameObjectComponent = (props?: GameObjectProps): GameObjectComponent => ({
+    vx: 0,
+    vy: 0,
+    accX: 0,
+    accY: 0,
+    ...props
+  }),
+  addComponents = <T extends DisplayObject, K extends any[]>(obj: T, ...comps: K): T & AssignType<K> =>
+    Object.assign(obj, ...comps);
 
-export const addComponents = <T extends DisplayObject, K extends any[]>(obj: T, ...comps: K): T & AssignType<K> =>
-  Object.assign(obj, ...comps);
+export { getGameObjectComponent, addComponents };
 
 /* export const addGameObjectComponent = <T extends DisplayObject>(
   obj: T,

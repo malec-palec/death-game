@@ -7,11 +7,11 @@ export interface Sprite extends DisplayObject {
 export type SpriteProps = Partial<
   Pick<
     DisplayObject,
-    "x" | "y" | "width" | "height" | "border" | "pivotX" | "pivotY" | "rotation" | "scaleX" | "scaleY"
+    "x" | "y" | "width" | "height" | "border" | "pivotX" | "pivotY" | "rotation" | "alpha" | "scaleX" | "scaleY"
   >
 >;
 
-export const createSpite = (image: CanvasImageSource, props?: SpriteProps): Sprite => {
+const createSpite = (image: CanvasImageSource, props?: SpriteProps): Sprite => {
   const imageWidth = <number>image.width,
     imageHeight = <number>image.height,
     sprite = createDisplayObject(
@@ -43,3 +43,5 @@ export const createSpite = (image: CanvasImageSource, props?: SpriteProps): Spri
   }
   return sprite;
 };
+
+export { createSpite };

@@ -4,64 +4,48 @@ const LEFT = 37,
   DOWN = 40,
   SPACE = 32;
 
-let left = false,
-  right = false,
-  up = false,
-  down = false,
-  space = false;
+let isLeftKeyDown = false,
+  isRightKeyDown = false,
+  isUpKeyDown = false,
+  isDownKeyDown = false,
+  isSpaceDown = false;
 
 onkeydown = (event: KeyboardEvent) => {
   const code = event.keyCode;
   if (code === LEFT) {
-    left = true;
+    isLeftKeyDown = true;
   }
   if (code === RIGHT) {
-    right = true;
+    isRightKeyDown = true;
   }
   if (code === UP) {
-    up = true;
+    isUpKeyDown = true;
   }
   if (code === DOWN) {
-    down = true;
+    isDownKeyDown = true;
   }
   if (code === SPACE) {
-    space = true;
+    isSpaceDown = true;
   }
 };
 
 onkeyup = (event: KeyboardEvent) => {
   const code = event.keyCode;
   if (code === LEFT) {
-    left = false;
+    isLeftKeyDown = false;
   }
   if (code === RIGHT) {
-    right = false;
+    isRightKeyDown = false;
   }
   if (code === UP) {
-    up = false;
+    isUpKeyDown = false;
   }
   if (code === DOWN) {
-    down = false;
+    isDownKeyDown = false;
   }
   if (code === SPACE) {
-    space = false;
+    isSpaceDown = false;
   }
 };
 
-export default {
-  get isLeftKeyDown() {
-    return left;
-  },
-  get isRightKeyDown() {
-    return right;
-  },
-  get isUpKeyDown() {
-    return up;
-  },
-  get isDownKeyDown() {
-    return down;
-  },
-  get isSpaceDown() {
-    return space;
-  }
-};
+export { isLeftKeyDown, isRightKeyDown, isUpKeyDown, isDownKeyDown, isSpaceDown };

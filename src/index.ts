@@ -3,7 +3,7 @@ import { createAssets } from "./assets";
 import ATLAS_URL from "./assets/atlas.png";
 import { initRenderer } from "./core/renderer";
 import { createGame } from "./game";
-import { loadImage } from "./loader";
+import { loadImage } from "./utils";
 
 const main = async () => {
   const atlas = await loadImage(ATLAS_URL),

@@ -1,4 +1,4 @@
-import { CHEST, DOOR, HERO, WALL_0, WALL_1, WALL_2 } from "./assets";
+import { HERO, ITEM_CHEST, ITEM_DOOR, TILE_WALL_0, TILE_WALL_1, TILE_WALL_2 } from "./assets";
 import { addComponents, GameObjectComponent, getGameObjectComponent } from "./components";
 import { DisplayObject } from "./core/display";
 import { createSpite, Sprite } from "./core/sprite";
@@ -110,7 +110,7 @@ export const makeWorld = (
       let mapSprite: Sprite;
       switch (cell.terrain) {
         case "rock":
-          mapSprite = createSpite(assets[WALL_2], {
+          mapSprite = createSpite(assets[TILE_WALL_2], {
             x: cell.x * level.tilewidth,
             y: cell.y * level.tileheight,
             width: level.tilewidth,
@@ -120,7 +120,7 @@ export const makeWorld = (
           break;
 
         case "grass":
-          mapSprite = createSpite(assets[WALL_1], {
+          mapSprite = createSpite(assets[TILE_WALL_1], {
             x: cell.x * level.tilewidth,
             y: cell.y * level.tileheight,
             width: level.tilewidth,
@@ -130,7 +130,7 @@ export const makeWorld = (
           break;
 
         case "border":
-          mapSprite = createSpite(assets[WALL_0], {
+          mapSprite = createSpite(assets[TILE_WALL_0], {
             x: cell.x * level.tilewidth,
             y: cell.y * level.tileheight,
             width: level.tilewidth,
@@ -147,7 +147,7 @@ export const makeWorld = (
         let mapSprite: Sprite, doorSpite: Sprite, image: HTMLCanvasElement;
         switch (cell.item) {
           case "player":
-            image = assets[DOOR];
+            image = assets[ITEM_DOOR];
             doorSpite = createSpite(image, {
               x: cell.x * level.tilewidth + (level.tilewidth - image.width) / 2,
               y: cell.y * level.tileheight + (level.tilewidth - image.height)
@@ -173,7 +173,7 @@ export const makeWorld = (
             break;
 
           case "treasure":
-            image = assets[CHEST];
+            image = assets[ITEM_CHEST];
             mapSprite = createSpite(image, {
               x: cell.x * level.tilewidth + (level.tilewidth - image.width) / 2,
               y: cell.y * level.tileheight + (level.tilewidth - image.height)

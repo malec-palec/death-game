@@ -11,6 +11,7 @@ export interface DisplayObject {
   pivotX: number;
   pivotY: number;
   rotation: number;
+  alpha: number;
   scaleX: number;
   scaleY: number;
   update(): void;
@@ -24,7 +25,7 @@ export interface DisplayObject {
 }
 
 // TODO: replace with make some required, rest - optional
-type DisplayObjectProps = MakeOptional<
+export type DisplayObjectProps = MakeOptional<
   DisplayObject,
   | "x"
   | "y"
@@ -32,6 +33,7 @@ type DisplayObjectProps = MakeOptional<
   | "pivotX"
   | "pivotY"
   | "rotation"
+  | "alpha"
   | "scaleX"
   | "scaleY"
   | "update"
@@ -43,7 +45,7 @@ type DisplayObjectProps = MakeOptional<
   | "getCenterY"
 >;
 
-export const createDisplayObject = <T extends { [prop: string]: any }>(
+const createDisplayObject = <T extends { [prop: string]: any }>(
   props: DisplayObjectProps,
   add: T
 ): DisplayObject & T => {
@@ -54,6 +56,7 @@ export const createDisplayObject = <T extends { [prop: string]: any }>(
     pivotX: 0,
     pivotY: 0,
     rotation: 0,
+    alpha: 1,
     scaleX: 1,
     scaleY: 1,
     update() {
@@ -89,3 +92,4 @@ export const createDisplayObject = <T extends { [prop: string]: any }>(
   };
   return Object.assign(obj, add);
 };
+export { createDisplayObject };

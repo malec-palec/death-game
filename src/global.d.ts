@@ -18,5 +18,3 @@ declare module "zzfx" {
 }
 
 declare const g: HTMLCanvasElement; // game
-
-type WriteLineFunc = (string: string, x: number, y: number, size?: number, color?: string) => number;

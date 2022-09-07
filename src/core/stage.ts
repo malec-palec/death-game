@@ -6,12 +6,11 @@ export interface Stage extends DisplayObject {
   removeChild(obj: DisplayObject): void;
 }
 
-export const createStage = (canvas: HTMLCanvasElement, y: number): Stage => {
+const createStage = (width: number, height: number): Stage => {
   const stage = createDisplayObject(
     {
-      y,
-      width: canvas.width,
-      height: canvas.height,
+      width,
+      height,
       render(context: CanvasRenderingContext2D) {
         stage.children.forEach((obj) => {
           context.save();
@@ -21,8 +20,7 @@ export const createStage = (canvas: HTMLCanvasElement, y: number): Stage => {
             stage.y + obj.y - obj.border + (obj.height + obj.border * 2) * obj.pivotY
           );
           context.rotate(obj.rotation);
-          // TODO: add alpha support
-          // TODO: add blend modes support
+          context.globalAlpha = obj.alpha * stage.alpha;
           context.scale(obj.scaleX, obj.scaleY);
 
           obj.render(context);
@@ -45,3 +43,5 @@ export const createStage = (canvas: HTMLCanvasElement, y: number): Stage => {
   );
   return stage;
 };
+
+export { createStage };

@@ -5,9 +5,9 @@ export interface Shape extends DisplayObject {
 }
 
 export type ShapeProps = Pick<DisplayObject, "width" | "height"> &
-  Partial<Pick<DisplayObject, "x" | "y" | "pivotX" | "pivotY" | "rotation" | "scaleX" | "scaleY">>;
+  Partial<Pick<DisplayObject, "x" | "y" | "pivotX" | "pivotY" | "rotation" | "alpha" | "scaleX" | "scaleY">>;
 
-export const createRectShape = (props: ShapeProps, color?: string): Shape => {
+const createRectShape = (props: ShapeProps, color?: string): Shape => {
   const shape = createDisplayObject(
     {
       ...props,
@@ -22,3 +22,5 @@ export const createRectShape = (props: ShapeProps, color?: string): Shape => {
   );
   return shape;
 };
+
+export { createRectShape };
