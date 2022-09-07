@@ -6,6 +6,7 @@ import { createText } from "./core/text";
 import { smoothstep, tweenProp } from "./core/tween";
 import { Game } from "./game";
 import { makeWorld } from "./level";
+import { playJumpSound } from "./sounds";
 
 export type UpdateScreen = () => void;
 
@@ -55,7 +56,7 @@ const TITLE_SCREEN = "title",
 
     stage.addChild(blank);
     tweenProp(
-      45,
+      30,
       (blank.alpha = 1),
       0,
       smoothstep,
@@ -79,6 +80,7 @@ const TITLE_SCREEN = "title",
       if (isSpaceDown) {
         if (player.isOnGround) {
           // hud.setDeathCount(++deaths);
+          playJumpSound();
           player.vy += player.jumpForce;
           player.isOnGround = false;
           player.frictionX = 1;
