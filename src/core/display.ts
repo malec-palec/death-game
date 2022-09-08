@@ -14,7 +14,7 @@ export interface DisplayObject {
   alpha: number;
   scaleX: number;
   scaleY: number;
-  update(): void;
+  update(dt: number): void;
   render(context: CanvasRenderingContext2D): void;
   getGlobalX(): number;
   getGlobalY(): number;
@@ -59,7 +59,7 @@ const createDisplayObject = <T extends { [prop: string]: any }>(
     alpha: 1,
     scaleX: 1,
     scaleY: 1,
-    update() {
+    update(dt: number) {
       // do nothing here
     },
     getGlobalX(): number {

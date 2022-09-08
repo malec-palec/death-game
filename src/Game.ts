@@ -1,13 +1,15 @@
 import { BG_COLOR } from "./assets";
 import { createStage, Stage } from "./core/stage";
 import { updateTweens } from "./core/tween";
-import { createGameScreen, createTitleScreen, GAME_SCREEN, TITLE_SCREEN, UpdateScreen } from "./screens";
+import { createGameScreen } from "./game-screen";
+import { ScreenName, UpdateScreen } from "./screen";
+import { createTitleScreen } from "./title-screen";
 
 export interface Game {
   readonly stage: Stage;
-  update(): void;
+  update(dt: number): void;
   render(): void;
-  changeScreen(name: typeof TITLE_SCREEN | typeof GAME_SCREEN): void;
+  changeScreen(name: ScreenName): void;
 }
 
 const createGame = (canvas: HTMLCanvasElement, assets: Array<HTMLCanvasElement>): Game => {
@@ -16,11 +18,10 @@ const createGame = (canvas: HTMLCanvasElement, assets: Array<HTMLCanvasElement>)
     stage = createStage(canvas.width, canvas.height),
     game = {
       stage,
-      update() {
-        stage.update();
-
-        updateScreen();
-        updateTweens();
+      update(dt: number) {
+        stage.update(dt);
+        updateScreen(dt);
+        updateTweens(dt);
       },
       render() {
         context.fillStyle = BG_COLOR;
@@ -28,18 +29,18 @@ const createGame = (canvas: HTMLCanvasElement, assets: Array<HTMLCanvasElement>)
 
         stage.render(context);
       },
-      changeScreen(name: typeof TITLE_SCREEN | typeof GAME_SCREEN) {
+      changeScreen(name: ScreenName) {
         switch (name) {
-          case TITLE_SCREEN:
+          case ScreenName.Title:
             updateScreen = createTitleScreen(game);
             break;
-          case GAME_SCREEN:
+          case ScreenName.Game:
             updateScreen = createGameScreen(game, assets);
             break;
         }
       }
     };
-  game.changeScreen(GAME_SCREEN);
+  game.changeScreen(ScreenName.Game);
   return game;
 };
 

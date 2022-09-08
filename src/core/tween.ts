@@ -24,7 +24,7 @@ const smoothstep = (x: number) => x * x * (3 - 2 * x),
     };
     tweens.push(tween);
   },
-  updateTweens = () => {
+  updateTweens = (dt: number) => {
     if (tweens.length > 0) {
       for (let updateTween: UpdateTween, i = tweens.length - 1; i >= 0; i--) {
         updateTween = tweens[i];

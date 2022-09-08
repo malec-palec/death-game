@@ -13,4 +13,5 @@ declare module "*.frag" {
   export default shader;
 }
 
-declare const g: HTMLCanvasElement; // game
+declare const g: HTMLCanvasElement;
+declare const l: HTMLLabelElement;

@@ -12,13 +12,51 @@ const main = async () => {
     game = createGame(g, assets),
     render = initRenderer(g);
 
-  // TODO: fix step
-  const loop = (time: number) => {
-    requestAnimationFrame(loop);
-    game.update();
-    game.render();
+  let focused = true;
+  onfocus = () => (focused = true);
+  onblur = () => (focused = false);
 
-    render(time);
+  // const delta = 1e3 / 60,
+  // maxAccum = delta * 2;
+  let now: number,
+    dt: number,
+    last = 0;
+  // accumulator = 0;
+
+  let frames = 0,
+    time: number,
+    prevTime = performance.now();
+
+  const loop = (t: number) => {
+    requestAnimationFrame(loop);
+
+    if (!focused) return;
+
+    now = performance.now();
+    dt = now - last;
+    last = now;
+
+    // if (accumulator > maxAccum) accumulator = maxAccum; // or
+    // if (dt > 1e3) return;
+
+    // accumulator += dt;
+    // while (accumulator >= delta) {
+    //   game.update();
+    //   accumulator -= delta;
+    // }
+
+    game.update(dt);
+
+    game.render();
+    render(t);
+
+    frames++;
+    time = performance.now();
+    if (time >= prevTime + 1000) {
+      l.innerText = "FPS:" + ((frames * 1000) / (time - prevTime)).toFixed(0);
+      prevTime = time;
+      frames = 0;
+    }
   };
   loop(0);
 
@@ -28,6 +66,8 @@ const main = async () => {
   //   viewFolder.open();
   // };
   // initGui();
+
+  return;
 
   const input = document.getElementById("file-input") as HTMLInputElement;
   input.onchange = (event: Event) => {
