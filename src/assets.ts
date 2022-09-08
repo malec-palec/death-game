@@ -1,14 +1,25 @@
 import { shuffle } from "./utils";
 
+const enum Tile {
+  Wall0,
+  Wall1,
+  Wall2,
+  Door,
+  Chest,
+  Scull,
+  Hero,
+  Snake,
+  Bat
+}
+
 const ASSETS_TILE_SIZE = 10,
   ASSETS_TILE_SCALE = 4,
   ASSETS_ITEM_SCALE = 3,
   ASSETS_BORDER_SIZE = 2,
   ASSETS_SCALED_TILE_SIZE = ASSETS_TILE_SIZE * ASSETS_TILE_SCALE,
   ASSETS_SCALED_ITEM_SIZE = ASSETS_TILE_SIZE * ASSETS_ITEM_SCALE,
-  [TILE_WALL_0, TILE_WALL_1, TILE_WALL_2, ITEM_DOOR, ITEM_CHEST, ITEM_SCULL, HERO, SNAKE, BAT] = [...Array(9).keys()],
-  GROUP_SCALE_CROP = ITEM_DOOR,
-  GROUP_ADD_BORDER = HERO,
+  GROUP_SCALE_CROP = Tile.Door,
+  GROUP_ADD_BORDER = Tile.Hero,
   BG_COLOR = "#201208",
   GREY = 0x929992,
   BROWN = 0xa26134,
@@ -92,10 +103,10 @@ const ASSETS_TILE_SIZE = 10,
       colors = [GREY, BROWN, BROWN_LIGHT, BLOOD];
 
     shuffle(colors);
-    colors[HERO] = PURPLE;
-    colors[ITEM_CHEST] = GOLD;
-    colors[ITEM_SCULL] = WHITE;
-    colors[SNAKE] = GREEN;
+    colors[Tile.Hero] = PURPLE;
+    colors[Tile.Chest] = GOLD;
+    colors[Tile.Scull] = WHITE;
+    colors[Tile.Snake] = GREEN;
 
     let x: number, y: number, i: number;
     for (y = 0; y < cols; y++) {
@@ -117,15 +128,7 @@ const ASSETS_TILE_SIZE = 10,
   };
 
 export {
-  TILE_WALL_0,
-  TILE_WALL_1,
-  TILE_WALL_2,
-  ITEM_DOOR,
-  ITEM_CHEST,
-  ITEM_SCULL,
-  HERO,
-  SNAKE,
-  BAT,
+  Tile,
   ASSETS_TILE_SIZE,
   ASSETS_TILE_SCALE,
   ASSETS_ITEM_SCALE,

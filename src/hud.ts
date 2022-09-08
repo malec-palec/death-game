@@ -1,4 +1,4 @@
-import { ASSETS_SCALED_ITEM_SIZE, ASSETS_SCALED_TILE_SIZE, ITEM_SCULL } from "./assets";
+import { ASSETS_SCALED_ITEM_SIZE, ASSETS_SCALED_TILE_SIZE, Tile } from "./assets";
 import { createDisplayObject, DisplayObject } from "./core/display";
 import { writeLine } from "./core/text";
 
@@ -14,7 +14,7 @@ export const createHUD = (width: number, assets: Array<HTMLCanvasElement>): HUD 
   const height = ASSETS_SCALED_TILE_SIZE,
     scaledSize = ASSETS_SCALED_ITEM_SIZE,
     offset = (height - scaledSize) / 2,
-    scullIcon = assets[ITEM_SCULL],
+    scullIcon = assets[Tile.Scull],
     hud = createDisplayObject(
       {
         width,

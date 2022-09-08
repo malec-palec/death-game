@@ -1,4 +1,4 @@
-import { HERO, ITEM_CHEST, ITEM_DOOR, TILE_WALL_0, TILE_WALL_1, TILE_WALL_2 } from "./assets";
+import { Tile } from "./assets";
 import { addComponents, GameObjectComponent, getGameObjectComponent } from "./components";
 import { DisplayObject } from "./core/display";
 import { createSpite, Sprite } from "./core/sprite";
@@ -12,11 +12,23 @@ type World = {
   player?: Player;
 };
 
+const enum Block {
+  Rock,
+  Sky,
+  Border,
+  Grass
+}
+
+const enum Item {
+  Player,
+  Treasure
+}
+
 type Cell = {
   x: number;
   y: number;
-  item: "player" | "treasure" | "";
-  terrain: "rock" | "sky" | "border" | "grass";
+  item?: Item;
+  terrain: Block;
 };
 
 const randomInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
@@ -47,8 +59,7 @@ export const makeWorld = (
         cell: Cell = {
           x,
           y,
-          item: "",
-          terrain: cellIsAlive() ? "rock" : "sky"
+          terrain: cellIsAlive() ? Block.Rock : Block.Sky
         };
       world.map.push(cell);
     }
@@ -64,15 +75,15 @@ export const makeWorld = (
         cellTwoAbove = world.map[getIndex(cell.x, cell.y - 2)];
 
       if (cell.x === 0 || cell.y === 0 || cell.x === level.widthInTiles - 1 || cell.y === level.heightInTiles - 1) {
-        if (cell.y === 0) cell.terrain = "sky";
-        else cell.terrain = "border";
+        if (cell.y === 0) cell.terrain = Block.Sky;
+        else cell.terrain = Block.Border;
       } else {
-        if (cell.terrain === "rock") {
-          if (cellAbove && cellAbove.terrain === "sky") {
-            cell.terrain = "grass";
+        if (cell.terrain === Block.Rock) {
+          if (cellAbove && cellAbove.terrain === Block.Sky) {
+            cell.terrain = Block.Grass;
             if (cellTwoAbove) {
-              if (cellTwoAbove.terrain === "rock" || cellTwoAbove.terrain === "grass") {
-                cellTwoAbove.terrain = "sky";
+              if (cellTwoAbove.terrain === Block.Rock || cellTwoAbove.terrain === Block.Grass) {
+                cellTwoAbove.terrain = Block.Sky;
               }
             }
           }
@@ -80,7 +91,7 @@ export const makeWorld = (
       }
     });
     world.map.forEach((cell: Cell) => {
-      if (cell.terrain === "grass") {
+      if (cell.terrain === Block.Grass) {
         const cellAbove = world.map[getIndex(cell.x, cell.y - 1)];
         world.itemLocations.push(cellAbove);
       }
@@ -96,22 +107,22 @@ export const makeWorld = (
     };
 
     let cell = findStartLocation();
-    cell.item = "player";
+    cell.item = Item.Player;
 
     for (let i = 0; i < 3; i++) {
       cell = findStartLocation();
-      cell.item = "treasure";
+      cell.item = Item.Treasure;
     }
   }
 
   function makeSprites() {
     world.map.forEach((cell) => {
-      if (cell.terrain === "sky") return;
+      if (cell.terrain === Block.Sky) return;
 
       let mapSprite: Sprite;
       switch (cell.terrain) {
-        case "rock":
-          mapSprite = createSpite(assets[TILE_WALL_2], {
+        case Block.Rock:
+          mapSprite = createSpite(assets[Tile.Wall2], {
             x: cell.x * level.tilewidth,
             y: cell.y * level.tileheight,
             width: level.tilewidth,
@@ -120,8 +131,8 @@ export const makeWorld = (
           world.platforms.push(mapSprite);
           break;
 
-        case "grass":
-          mapSprite = createSpite(assets[TILE_WALL_1], {
+        case Block.Grass:
+          mapSprite = createSpite(assets[Tile.Wall1], {
             x: cell.x * level.tilewidth,
             y: cell.y * level.tileheight,
             width: level.tilewidth,
@@ -130,8 +141,8 @@ export const makeWorld = (
           world.platforms.push(mapSprite);
           break;
 
-        case "border":
-          mapSprite = createSpite(assets[TILE_WALL_0], {
+        case Block.Border:
+          mapSprite = createSpite(assets[Tile.Wall0], {
             x: cell.x * level.tilewidth,
             y: cell.y * level.tileheight,
             width: level.tilewidth,
@@ -143,19 +154,19 @@ export const makeWorld = (
       stage.addChild(mapSprite);
     });
 
-    world.map.forEach((cell) => {
-      if (cell.item !== "") {
+    world.map.forEach((cell: Cell) => {
+      if (cell.item !== undefined) {
         let mapSprite: Sprite, doorSpite: Sprite, image: HTMLCanvasElement;
         switch (cell.item) {
-          case "player":
-            image = assets[ITEM_DOOR];
+          case Item.Player:
+            image = assets[Tile.Door];
             doorSpite = createSpite(image, {
               x: cell.x * level.tilewidth + (level.tilewidth - image.width) / 2,
               y: cell.y * level.tileheight + (level.tilewidth - image.height)
             });
             stage.addChild(doorSpite);
 
-            image = assets[HERO];
+            image = assets[Tile.Hero];
             mapSprite = createSpite(image, {
               x: cell.x * level.tilewidth + (level.tilewidth - image.width) / 2,
               y: cell.y * level.tileheight + (level.tilewidth - image.height),
@@ -173,8 +184,8 @@ export const makeWorld = (
             stage.addChild(world.player);
             break;
 
-          case "treasure":
-            image = assets[ITEM_CHEST];
+          case Item.Treasure:
+            image = assets[Tile.Chest];
             mapSprite = createSpite(image, {
               x: cell.x * level.tilewidth + (level.tilewidth - image.width) / 2,
               y: cell.y * level.tileheight + (level.tilewidth - image.height)
