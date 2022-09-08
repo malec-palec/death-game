@@ -19,12 +19,13 @@ export const enum Block {
 
 export const enum Item {
   Player,
-  Treasure
+  Treasure,
+  Exit
 }
 
 const randomInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
 
-export const makeRoom = (level: { widthInTiles: number; heightInTiles: number }): Room => {
+export const generateRoom = (level: { widthInTiles: number; heightInTiles: number }): Room => {
   const room: Room = {
       map: [],
       itemLocations: []
@@ -91,6 +92,8 @@ export const makeRoom = (level: { widthInTiles: number; heightInTiles: number })
     cell = findStartLocation();
     cell.item = Item.Treasure;
   }
+  cell = findStartLocation();
+  cell.item = Item.Exit;
 
   return room;
 };

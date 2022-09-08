@@ -48,4 +48,41 @@ onkeyup = (event: KeyboardEvent) => {
   }
 };
 
+type Key = {
+  code: number;
+  isDown: boolean;
+  isUp: boolean;
+  press?: () => void;
+  release?: () => void;
+  downHandler: (event: KeyboardEvent) => void;
+  upHandler: (event: KeyboardEvent) => void;
+};
+
+export const bindKey = (keyCode: number): Key => {
+  const key: Key = {
+    code: keyCode,
+    isDown: false,
+    isUp: false,
+    downHandler: (event: KeyboardEvent) => {
+      if (event.keyCode === key.code) {
+        if (key.isUp && key.press) key.press();
+        key.isDown = true;
+        key.isUp = false;
+      }
+      // event.preventDefault();
+    },
+    upHandler: (event: KeyboardEvent) => {
+      if (event.keyCode === key.code) {
+        if (key.isDown && key.release) key.release();
+        key.isDown = false;
+        key.isUp = true;
+      }
+      // event.preventDefault();
+    }
+  };
+  addEventListener("keydown", key.downHandler.bind(key), false);
+  addEventListener("keyup", key.upHandler.bind(key), false);
+  return key;
+};
+
 export { isLeftKeyDown, isRightKeyDown, isUpKeyDown, isDownKeyDown, isSpaceDown };
