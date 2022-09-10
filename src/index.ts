@@ -1,12 +1,17 @@
 // import { GUI } from "dat.gui";
 import { createAssets } from "./assets";
 import ATLAS_URL from "./assets/atlas.png";
+import { random } from "./core/random";
 import { initRenderer } from "./core/renderer";
 import { createGame } from "./game";
 import { playSong } from "./sounds";
 import { loadImage } from "./utils";
 
 const main = async () => {
+  // const seed = 895981740;
+  const seed = Math.floor(Math.random() * 2147483646);
+  random.seed = seed;
+
   const atlas = await loadImage(ATLAS_URL),
     assets = createAssets(atlas),
     game = createGame(g, assets),

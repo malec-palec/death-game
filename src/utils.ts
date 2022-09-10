@@ -12,4 +12,4 @@ const loadImage = (url: string): Promise<HTMLImageElement> => {
       [array[i], array[j]] = [array[j], array[i]];
     }
   };
-export { loadImage, shuffle };
+export { loadImage };

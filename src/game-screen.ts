@@ -1,10 +1,13 @@
-import { ASSETS_SCALED_TILE_SIZE, BG_COLOR, Tile } from "./assets";
+import { ASSETS_BORDER_SIZE, ASSETS_SCALED_TILE_SIZE, Tile } from "./assets";
 import { hitTestRectangle, rectangleCollision } from "./collision";
+import { Color } from "./colors";
 import { DisplayObject } from "./core/display";
 import { bindKey, isLeftKeyDown, isRightKeyDown, isSpaceDown } from "./core/keyboard";
+import { random } from "./core/random";
 import { createRectShape } from "./core/shape";
 import { createSpite, Sprite } from "./core/sprite";
 import { smoothstep, tweenProp } from "./core/tween";
+import { createDoor, Door } from "./door";
 import { Game } from "./game";
 import { createHUD } from "./hud";
 import { createPlayer, Player } from "./player";
@@ -15,16 +18,16 @@ import { playGameOverSound, playJumpSound } from "./sounds";
 const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateScreen => {
   const { stage } = game,
     hud = createHUD(stage.width, assets),
-    blank = createRectShape({ width: stage.width, height: stage.height, alpha: 1 }, BG_COLOR);
+    blank = createRectShape({ width: stage.width, height: stage.height, alpha: 1 }, Color.BrownDark);
 
-  let { platforms, treasures, exit, player } = createLevel(assets),
+  let { platforms, treasures, exit, player, debugShapes } = createLevel(assets),
     deaths = 0,
     roomNo = 0;
 
-  stage.addMany(hud, ...platforms, ...treasures, exit, player, blank);
+  stage.addMany(hud, ...platforms, ...treasures, exit, player, ...debugShapes, blank);
 
   tweenProp(
-    30,
+    45,
     (blank.alpha = 1),
     0,
     smoothstep,
@@ -34,9 +37,11 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
 
   const keyR = bindKey(82);
   keyR.release = () => {
+    random.seed = random.nextInt();
+
     stage.removeAll();
-    ({ platforms, treasures, player, exit } = createLevel(assets));
-    stage.addMany(hud, ...platforms, ...treasures, exit, player);
+    ({ platforms, treasures, player, exit, debugShapes } = createLevel(assets));
+    stage.addMany(hud, ...platforms, ...treasures, exit, player, ...debugShapes);
   };
 
   return (dt: number) => {
@@ -94,8 +99,8 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
       }
     });
 
-    // if (player.x < 0) player.x = 0;
-    // if (player.x + player.width > stage.width) player.x = stage.width - player.width;
+    if (player.x < 0) player.x = 0;
+    if (player.x + player.width > stage.width) player.x = stage.width - player.width;
     // if (player.y < 0) player.y = 0;
     // if (player.y + player.height > stage.height) player.y = stage.height - player.height;
 
@@ -104,18 +109,20 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
         hud.setDeathCount(++deaths);
         stage.removeChild(box);
 
+        if (treasures.length === 1) exit.open();
+
         return false;
       } else {
         return true;
       }
     });
 
-    if (hitTestRectangle(player, exit)) {
+    if (exit.isOpened() && hitTestRectangle(player, exit)) {
       hud.setRoomNo(++roomNo);
       playGameOverSound();
       stage.removeAll();
-      ({ platforms, treasures, player, exit } = createLevel(assets));
-      stage.addMany(hud, ...platforms, ...treasures, exit, player);
+      ({ platforms, treasures, player, exit, debugShapes } = createLevel(assets));
+      stage.addMany(hud, ...platforms, ...treasures, exit, player, ...debugShapes);
     }
   };
 };
@@ -132,40 +139,46 @@ const createLevel = (assets: Array<HTMLCanvasElement>) => {
     platforms: Array<DisplayObject> = [],
     treasures: Array<DisplayObject> = [];
 
-  let player: Player, exit: Sprite;
+  let player: Player, exit: Door;
 
   room.map.forEach((cell) => {
     if (cell.terrain === Block.Sky) return;
 
-    let mapSprite: Sprite;
+    let mapSprite: DisplayObject;
     switch (cell.terrain) {
       case Block.Rock:
-        mapSprite = createSpite(assets[Tile.Wall2], {
-          x: cell.x * tileWidth,
-          y: cell.y * tileHeight,
-          width: tileWidth,
-          height: tileHeight
-        });
+        mapSprite = createSpite(
+          assets[Tile.Wall2],
+          {
+            x: cell.x * tileWidth,
+            y: cell.y * tileHeight
+          },
+          Color.BrownLight
+        );
         platforms.push(mapSprite);
         break;
 
       case Block.Grass:
-        mapSprite = createSpite(assets[Tile.Wall1], {
-          x: cell.x * tileWidth,
-          y: cell.y * tileHeight,
-          width: tileWidth,
-          height: tileHeight
-        });
+        mapSprite = createSpite(
+          assets[Tile.Wall1],
+          {
+            x: cell.x * tileWidth,
+            y: cell.y * tileHeight
+          },
+          Color.Brown
+        );
         platforms.push(mapSprite);
         break;
 
       case Block.Border:
-        mapSprite = createSpite(assets[Tile.Wall0], {
-          x: cell.x * tileWidth,
-          y: cell.y * tileHeight,
-          width: tileWidth,
-          height: tileHeight
-        });
+        mapSprite = createSpite(
+          assets[Tile.Wall0],
+          {
+            x: cell.x * tileWidth,
+            y: cell.y * tileHeight
+          },
+          Color.Grey
+        );
         platforms.push(mapSprite);
         break;
     }
@@ -177,13 +190,17 @@ const createLevel = (assets: Array<HTMLCanvasElement>) => {
       switch (cell.item) {
         case Item.Player:
           image = assets[Tile.Hero];
-          mapSprite = createSpite(image, {
-            x: cell.x * tileWidth + (tileWidth - image.width) / 2,
-            y: cell.y * tileHeight + (tileWidth - image.height),
-            pivotX: 0.5,
-            pivotY: 0.5,
-            border: 2
-          });
+          mapSprite = createSpite(
+            image,
+            {
+              x: cell.x * tileWidth + (tileWidth - image.width) / 2,
+              y: cell.y * tileHeight + (tileHeight - image.height),
+              pivotX: 0.5,
+              pivotY: 0.5,
+              border: ASSETS_BORDER_SIZE
+            },
+            Color.Purple
+          );
           player = createPlayer(mapSprite, {
             frictionX: 1,
             frictionY: 1,
@@ -195,28 +212,40 @@ const createLevel = (assets: Array<HTMLCanvasElement>) => {
 
         case Item.Treasure:
           image = assets[Tile.Chest];
-          mapSprite = createSpite(image, {
-            x: cell.x * tileWidth + (tileWidth - image.width) / 2,
-            y: cell.y * tileHeight + (tileWidth - image.height)
-          });
+          mapSprite = createSpite(
+            image,
+            {
+              x: cell.x * tileWidth + (tileWidth - image.width) / 2,
+              y: cell.y * tileHeight + (tileHeight - image.height)
+            },
+            Color.Gold
+          );
           treasures.push(mapSprite);
           break;
 
         case Item.Exit:
-          image = assets[Tile.Door];
-          exit = createSpite(image, {
+          image = assets[Tile.DoorClosed];
+          exit = createDoor(image, assets[Tile.DoorOpen], Color.Blood, {
             x: cell.x * tileWidth + (tileWidth - image.width) / 2,
-            y: cell.y * tileHeight + (tileWidth - image.height)
+            y: cell.y * tileHeight + (tileHeight - image.height)
           });
           break;
       }
     }
   });
 
+  const debugShapes = room.debug.map((cell: Cell) =>
+    createRectShape(
+      { x: cell.x * tileWidth, y: cell.y * tileHeight, width: tileWidth, height: tileHeight, alpha: 0.5 },
+      cell.color
+    )
+  );
+
   return {
     player: player!,
     exit: exit!,
     platforms,
-    treasures
+    treasures,
+    debugShapes
   };
 };
