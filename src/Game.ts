@@ -1,4 +1,4 @@
-import { BG_COLOR } from "./assets";
+import { Color } from "./colors";
 import { createStage, Stage } from "./core/stage";
 import { updateTweens } from "./core/tween";
 import { createGameScreen } from "./game-screen";
@@ -24,7 +24,7 @@ const createGame = (canvas: HTMLCanvasElement, assets: Array<HTMLCanvasElement>)
         updateTweens(dt);
       },
       render() {
-        context.fillStyle = BG_COLOR;
+        context.fillStyle = Color.BrownDark;
         context.fillRect(0, 0, stage.width, stage.height);
 
         stage.render(context);

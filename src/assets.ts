@@ -1,15 +1,13 @@
-import { shuffle } from "./utils";
-
 const enum Tile {
   Wall0,
   Wall1,
   Wall2,
-  Door,
+  DoorClosed,
+  DoorOpen,
   Chest,
   Scull,
   Hero,
-  Snake,
-  Bat
+  Snake
 }
 
 const ASSETS_TILE_SIZE = 10,
@@ -18,24 +16,14 @@ const ASSETS_TILE_SIZE = 10,
   ASSETS_BORDER_SIZE = 2,
   ASSETS_SCALED_TILE_SIZE = ASSETS_TILE_SIZE * ASSETS_TILE_SCALE,
   ASSETS_SCALED_ITEM_SIZE = ASSETS_TILE_SIZE * ASSETS_ITEM_SCALE,
-  GROUP_SCALE_CROP = Tile.Door,
+  GROUP_SCALE_CROP = Tile.DoorClosed,
   GROUP_ADD_BORDER = Tile.Hero,
-  BG_COLOR = "#201208",
-  GREY = 0x929992,
-  BROWN = 0xa26134,
-  BROWN_LIGHT = 0xcc8e4c,
-  PURPLE = 0xe05ad1,
-  GOLD = 0xf7c439,
-  BLOOD = 0xae3737,
-  WHITE = 0xffffff,
-  GREEN = 0x4dd464,
   processTile = (
     image: HTMLImageElement,
     offX: number,
     offY: number,
     size: number,
     scale: number,
-    color: number,
     cropAlpha = true,
     border = 0
   ): HTMLCanvasElement => {
@@ -63,9 +51,6 @@ const ASSETS_TILE_SIZE = 10,
         if (rgba[i] === 0) {
           rgba[i + 3] = 0;
         } else {
-          rgba[i] = (color >> 16) & 0xff;
-          rgba[i + 1] = (color >> 8) & 0xff;
-          rgba[i + 2] = color & 0xff;
           if (x < minX) minX = x;
           if (y < minY) minY = y;
           if (x > maxX) maxX = x;
@@ -85,9 +70,6 @@ const ASSETS_TILE_SIZE = 10,
     ctx = scaledCanvas.getContext("2d")!;
     ctx.imageSmoothingEnabled = false;
 
-    // ctx.fillStyle = "red";
-    // ctx.fillRect(0, 0, scaledCanvas.width, scaledCanvas.height);
-
     if (cropAlpha) {
       ctx.drawImage(canvas, border - minX * scale, border - minY * scale, scaledSize, scaledSize);
     } else {
@@ -99,14 +81,7 @@ const ASSETS_TILE_SIZE = 10,
   createAssets = (atlas: HTMLImageElement): HTMLCanvasElement[] => {
     const assets: Array<HTMLCanvasElement> = [],
       rows = atlas.width / ASSETS_TILE_SIZE,
-      cols = atlas.height / ASSETS_TILE_SIZE,
-      colors = [GREY, BROWN, BROWN_LIGHT, BLOOD];
-
-    shuffle(colors);
-    colors[Tile.Hero] = PURPLE;
-    colors[Tile.Chest] = GOLD;
-    colors[Tile.Scull] = WHITE;
-    colors[Tile.Snake] = GREEN;
+      cols = atlas.height / ASSETS_TILE_SIZE;
 
     let x: number, y: number, i: number;
     for (y = 0; y < cols; y++) {
@@ -118,7 +93,6 @@ const ASSETS_TILE_SIZE = 10,
           y * ASSETS_TILE_SIZE,
           ASSETS_TILE_SIZE,
           i < GROUP_SCALE_CROP ? ASSETS_TILE_SCALE : ASSETS_ITEM_SCALE,
-          colors[i % colors.length],
           i >= GROUP_SCALE_CROP,
           i < GROUP_ADD_BORDER ? 0 : ASSETS_BORDER_SIZE
         );
@@ -135,6 +109,5 @@ export {
   ASSETS_BORDER_SIZE,
   ASSETS_SCALED_TILE_SIZE,
   ASSETS_SCALED_ITEM_SIZE,
-  BG_COLOR,
   createAssets
 };

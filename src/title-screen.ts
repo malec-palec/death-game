@@ -1,4 +1,4 @@
-import { BG_COLOR } from "./assets";
+import { Color } from "./colors";
 import { isSpaceDown } from "./core/keyboard";
 import { createRectShape } from "./core/shape";
 import { createText } from "./core/text";
@@ -9,7 +9,7 @@ import { ScreenName, UpdateScreen } from "./screen";
 const createTitleScreen = (game: Game): UpdateScreen => {
   const { stage } = game,
     nameLabel = createText("TITLE", 30, { width: stage.width, x: 5, y: 5 }),
-    blank = createRectShape({ width: stage.width, height: stage.height, alpha: 0 }, BG_COLOR);
+    blank = createRectShape({ width: stage.width, height: stage.height, alpha: 0 }, Color.BrownDark);
   stage.addChild(nameLabel);
   stage.addChild(blank);
 

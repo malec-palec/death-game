@@ -12,6 +12,8 @@ const main = async () => {
     game = createGame(g, assets),
     render = initRenderer(g);
 
+  // g.style.cssText = "display:block;margin:0 auto;height:100%;";
+
   let focused = true;
   onfocus = () => (focused = true);
   onblur = () => (focused = false);
