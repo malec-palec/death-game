@@ -2,12 +2,12 @@ const enum Tile {
   Wall0,
   Wall1,
   Wall2,
+  Empty,
   DoorClosed,
   DoorOpen,
   Chest,
   Scull,
-  Hero,
-  Snake
+  Hero
 }
 
 const ASSETS_TILE_SIZE = 10,

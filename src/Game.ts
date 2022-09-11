@@ -1,3 +1,4 @@
+import { ASSETS_SCALED_TILE_SIZE } from "./assets";
 import { Color } from "./colors";
 import { createStage, Stage } from "./core/stage";
 import { updateTweens } from "./core/tween";
@@ -15,7 +16,8 @@ export interface Game {
 const createGame = (canvas: HTMLCanvasElement, assets: Array<HTMLCanvasElement>): Game => {
   let updateScreen: UpdateScreen;
   const context = canvas.getContext("2d")!,
-    stage = createStage(canvas.width, canvas.height),
+    tileSize = ASSETS_SCALED_TILE_SIZE,
+    stage = createStage(canvas.width + tileSize, canvas.height, -tileSize / 2),
     game = {
       stage,
       update(dt: number) {

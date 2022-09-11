@@ -1,174 +1,110 @@
 import { random } from "./core/random";
 
-type Room = {
-  map: Cell[];
-  itemLocations: Cell[];
-  debug: Cell[];
-};
-
 export type Cell = {
   x: number;
   y: number;
-  item?: Item;
-  terrain: Block;
-  color?: string;
+  terrain: TerrainType;
+  item?: ItemType;
 };
 
-export const enum Block {
+export const enum TerrainType {
   Rock,
   Sky,
   Border,
   Grass
 }
 
-export const enum Item {
+export const enum ItemType {
   Player,
   Treasure,
   Exit
 }
 
-// const randomInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
+type Level = {
+  widthInTiles: number;
+  heightInTiles: number;
+};
+
+type Room = {
+  map: Cell[];
+  itemLocations: Cell[];
+};
+
+const randomInt = (min: number, max: number) => Math.floor(random.nextDouble() * (max - min + 1)) + min,
+  cellIsGround = () => randomInt(0, 3) === 0;
 
 // room layout generator
-export const generateRoom = (level: { widthInTiles: number; heightInTiles: number }): Room => {
+export const generateRoom = ({ widthInTiles, heightInTiles }: Level): Room => {
   console.log("Seed:", random.seed);
 
-  const room: Room = {
-      map: [],
-      itemLocations: [],
-      debug: []
-    },
-    numCells = level.heightInTiles * level.widthInTiles,
-    cellIsAlive = () => random.nextIntRange(0, 3) === 0,
-    getIndex = (x: number, y: number) => x + y * level.widthInTiles;
+  const map: Array<Cell> = [],
+    itemLocations: Array<Cell> = [],
+    numCells = heightInTiles * widthInTiles,
+    getIndex = (x: number, y: number) => x + y * widthInTiles;
 
-  let i: number;
+  let i: number, cell: Cell;
 
   // makeMap
   for (i = 0; i < numCells; i++) {
-    const x = i % level.widthInTiles,
-      y = Math.floor(i / level.widthInTiles),
+    const terrain = cellIsGround() ? TerrainType.Rock : TerrainType.Sky,
       cell: Cell = {
-        x,
-        y,
-        terrain: cellIsAlive() ? Block.Rock : Block.Sky,
-        color: "green"
+        x: i % widthInTiles,
+        y: Math.floor(i / widthInTiles),
+        terrain
       };
-    room.map.push(cell);
+    map.push(cell);
   }
 
   // terraformMap
-  room.map.forEach((cell: Cell) => {
-    const cellToTheLeft = room.map[getIndex(cell.x - 1, cell.y)],
-      cellToTheRight = room.map[getIndex(cell.x + 1, cell.y)],
-      cellBelow = room.map[getIndex(cell.x, cell.y + 1)],
-      cellAbove = room.map[getIndex(cell.x, cell.y - 1)],
-      cellTwoAbove = room.map[getIndex(cell.x, cell.y - 2)];
+  map.forEach((cell: Cell) => {
+    const cellToTheLeft = map[getIndex(cell.x - 1, cell.y)],
+      cellToTheRight = map[getIndex(cell.x + 1, cell.y)],
+      cellBelow = map[getIndex(cell.x, cell.y + 1)],
+      cellAbove = map[getIndex(cell.x, cell.y - 1)],
+      cellTwoAbove = map[getIndex(cell.x, cell.y - 2)];
 
-    if (cell.x === 0 || cell.y === 0 || cell.x === level.widthInTiles - 1 || cell.y === level.heightInTiles - 1) {
-      if (cell.y === 0) cell.terrain = Block.Sky;
-      else cell.terrain = Block.Border;
+    if (cell.x === 0 || cell.y === 0 || cell.x === widthInTiles - 1 || cell.y === heightInTiles - 1) {
+      if (cell.y === heightInTiles - 1) cell.terrain = TerrainType.Border;
+      else cell.terrain = TerrainType.Sky;
     } else {
-      // if (cell.y === 0) cell.terrain = Block.Sky;
-      // if (cell.y === level.heightInTiles - 1 && cell.x > 0 && cell.x < level.widthInTiles - 1)
-      //   cell.terrain = Block.Rock;
-      if (cell.terrain === Block.Rock) {
-        if (cellAbove && cellAbove.terrain === Block.Sky) {
-          cell.terrain = Block.Grass;
+      if (cell.terrain === TerrainType.Rock) {
+        if (cellAbove && cellAbove.terrain === TerrainType.Sky) {
+          cell.terrain = TerrainType.Grass;
           if (cellTwoAbove) {
-            if (cellTwoAbove.terrain === Block.Rock || cellTwoAbove.terrain === Block.Grass) {
-              cellTwoAbove.terrain = Block.Sky;
+            if (cellTwoAbove.terrain === TerrainType.Rock || cellTwoAbove.terrain === TerrainType.Grass) {
+              cellTwoAbove.terrain = TerrainType.Sky;
             }
           }
         }
       }
     }
   });
-  room.map.forEach((cell: Cell) => {
-    if (cell.terrain === Block.Grass) {
-      const cellAbove = room.map[getIndex(cell.x, cell.y - 1)];
-      room.itemLocations.push(cellAbove);
+  map.forEach((cell: Cell) => {
+    if (cell.y > 1 && cell.terrain === TerrainType.Grass) {
+      const cellAbove = map[getIndex(cell.x, cell.y - 1)];
+      itemLocations.push(cellAbove);
     }
   });
 
   const findStartLocation = () => {
-      const randomIndex = random.nextIntRange(0, room.itemLocations.length - 1),
-        location = room.itemLocations[randomIndex];
-      room.itemLocations.splice(randomIndex, 1);
-      return location;
-    },
-    traverseCells = (cells: Cell[], cell?: Cell) => {
-      if (cell && (cell.terrain === Block.Grass || cell.terrain === Block.Rock) && cells.indexOf(cell) < 0) {
-        cells.push(cell);
-        traverseCells(cells, room.map[getIndex(cell.x - 1, cell.y)]);
-        traverseCells(cells, room.map[getIndex(cell.x + 1, cell.y)]);
-        traverseCells(cells, room.map[getIndex(cell.x, cell.y - 1)]);
-        traverseCells(cells, room.map[getIndex(cell.x, cell.y + 1)]);
-      }
-      return cells;
-    },
-    processCell = (cell: Cell, cells: Cell[]) => {
-      const getCellAt = (dx: number, dy: number): Cell | undefined => {
-          const c = room.map[getIndex(cell.x + dx, cell.y + dy)];
-          if (c && c.terrain === Block.Grass && cells.indexOf(c) < 0) cells.push(c);
-          return c;
-        },
-        isGround = (c?: Cell) => c && c.terrain !== Block.Sky,
-        isEmpty = (c?: Cell) => c && c.terrain === Block.Sky,
-        cell_R1_U1 = getCellAt(1, -1),
-        cell_R1 = getCellAt(1, 0),
-        cell_R1_D1 = getCellAt(1, 1),
-        cell_L1_U1 = getCellAt(-1, -1),
-        cell_L1 = getCellAt(-1, 0),
-        cell_L1_D1 = getCellAt(-1, 1);
+    const randomIndex = randomInt(0, itemLocations.length - 1),
+      location = itemLocations[randomIndex];
+    itemLocations.splice(randomIndex, 1);
+    return location;
+  };
 
-      // if (cell.y === level.heightInTiles - 2) {
-      //   cell.color = "green";
-      // }
-
-      if (
-        (isEmpty(cell_R1_U1) && isEmpty(cell_R1) && isEmpty(cell_R1_D1)) ||
-        (isEmpty(cell_L1_U1) && isEmpty(cell_L1) && isEmpty(cell_L1_D1))
-      ) {
-        cell.color = "red";
-      }
-
-      // if (isGround(cell_R1_U1) || isGround(cell_R1) || isGround(cell_R1_D1)) {
-      // cell.color = "green";
-      /* if (
-          isGround(cell_L1_U1) ||
-          isGround(cell_L1) ||
-          isGround(cell_L1_D1) ||
-          isGround(cell_L1_D2) ||
-          isGround(cell_L2_D2)
-        ) {
-          cell.color = "green";
-        } else {
-          // Can not reach from the Left
-        } */
-      // } else {
-      // Can not reach from the Right
-      // }
-    };
-
-  const visited: Array<Cell> = [];
   // addItems
-  let cell = findStartLocation();
-  cell.item = Item.Player;
+  cell = findStartLocation();
+  cell.item = ItemType.Player;
   for (i = 0; i < 3; i++) {
     cell = findStartLocation();
-    cell.item = Item.Treasure;
-    visited.push(room.map[getIndex(cell.x, cell.y + 1)]);
+    cell.item = ItemType.Treasure;
   }
   cell = findStartLocation();
-  cell.item = Item.Exit;
-  visited.push(room.map[getIndex(cell.x, cell.y + 1)]);
+  cell.item = ItemType.Exit;
 
-  for (i = 0; i < visited.length; i++) {
-    processCell(visited[i], visited);
-  }
-
-  room.debug.push(...visited);
-
-  return room;
+  return {
+    map,
+    itemLocations
+  };
 };

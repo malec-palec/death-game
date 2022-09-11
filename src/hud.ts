@@ -20,8 +20,8 @@ export const createHUD = (width: number, assets: Array<HTMLCanvasElement>): HUD 
         width,
         height,
         render(context: CanvasRenderingContext2D) {
-          writeLine(context, "ROOM " + roomNo, 0, offset, scaledSize, "#FFF");
-          sx = width - 3 * height;
+          writeLine(context, "ROOM " + roomNo, height, offset, scaledSize, "#FFF");
+          sx = width - 4 * height;
           sx += writeLine(context, deathCount, sx, offset, scaledSize, "#FFF");
           context.drawImage(scullIcon, sx + offset * 2, offset);
         }

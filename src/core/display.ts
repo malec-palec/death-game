@@ -47,7 +47,7 @@ export type DisplayObjectProps = MakeOptional<
 
 const createDisplayObject = <T extends { [prop: string]: any }>(
   props: DisplayObjectProps,
-  add: T
+  add?: T
 ): DisplayObject & T => {
   const obj: DisplayObject = {
     x: 0,

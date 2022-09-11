@@ -13,7 +13,7 @@ export type SpriteProps = Partial<
   >
 >;
 
-const colorizeImage = (image: CanvasImageSource, color: string): CanvasImageSource => {
+export const colorizeImage = (image: CanvasImageSource, color: string): CanvasImageSource => {
   const canvas = document.createElement("canvas");
   canvas.width = <number>image.width;
   canvas.height = <number>image.height;

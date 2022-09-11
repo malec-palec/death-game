@@ -8,9 +8,11 @@ export interface Stage extends DisplayObject {
   removeAll(): void;
 }
 
-const createStage = (width: number, height: number): Stage => {
+const createStage = (width: number, height: number, x = 0, y = 0): Stage => {
   const stage = createDisplayObject(
     {
+      x,
+      y,
       width,
       height,
       render(context: CanvasRenderingContext2D) {
