@@ -5,6 +5,7 @@ export type Cell = {
   y: number;
   terrain: TerrainType;
   item?: ItemType;
+  isEmpty(): boolean;
 };
 
 export const enum TerrainType {
@@ -37,12 +38,29 @@ const randomInt = (min: number, max: number) => Math.floor(random.nextDouble() *
 export const generateRoom = ({ widthInTiles, heightInTiles }: Level): Room => {
   console.log("Seed:", random.seed);
 
-  const map: Array<Cell> = [],
+  const MAX_HOLES = 3,
+    map: Array<Cell> = [],
     itemLocations: Array<Cell> = [],
     numCells = heightInTiles * widthInTiles,
-    getIndex = (x: number, y: number) => x + y * widthInTiles;
+    getIndex = (x: number, y: number) => x + y * widthInTiles,
+    getCellNear = (c: Cell, dx: number, dy: number): Cell | undefined => map[getIndex(c.x + dx, c.y + dy)],
+    placeItem = (type: ItemType): Cell => {
+      const randIndex = randomInt(0, itemLocations.length - 1),
+        loc = itemLocations[randIndex],
+        leftNeighbor = getCellNear(loc, -1, 0)!,
+        rightNeighbor = getCellNear(loc, 1, 0)!;
+      itemLocations.splice(randIndex, 1);
+      if (leftNeighbor.item || rightNeighbor.item) {
+        return placeItem(type);
+      }
+      loc.item = type;
+      return loc;
+    };
 
-  let i: number, cell: Cell;
+  let i: number,
+    cell: Cell,
+    holesNum = 0,
+    floor: Array<Cell> = [];
 
   // makeMap
   for (i = 0; i < numCells; i++) {
@@ -50,22 +68,24 @@ export const generateRoom = ({ widthInTiles, heightInTiles }: Level): Room => {
       cell: Cell = {
         x: i % widthInTiles,
         y: Math.floor(i / widthInTiles),
-        terrain
+        terrain,
+        isEmpty() {
+          return this.terrain === TerrainType.Sky;
+        }
       };
     map.push(cell);
   }
 
   // terraformMap
   map.forEach((cell: Cell) => {
-    const cellToTheLeft = map[getIndex(cell.x - 1, cell.y)],
-      cellToTheRight = map[getIndex(cell.x + 1, cell.y)],
-      cellBelow = map[getIndex(cell.x, cell.y + 1)],
-      cellAbove = map[getIndex(cell.x, cell.y - 1)],
-      cellTwoAbove = map[getIndex(cell.x, cell.y - 2)];
+    const cellAbove = getCellNear(cell, 0, -1),
+      cellTwoAbove = getCellNear(cell, 0, -2);
 
     if (cell.x === 0 || cell.y === 0 || cell.x === widthInTiles - 1 || cell.y === heightInTiles - 1) {
-      if (cell.y === heightInTiles - 1) cell.terrain = TerrainType.Border;
-      else cell.terrain = TerrainType.Sky;
+      if (cell.y === heightInTiles - 1) {
+        cell.terrain = TerrainType.Border;
+        floor.push(cell);
+      } else cell.terrain = TerrainType.Sky;
     } else {
       if (cell.terrain === TerrainType.Rock) {
         if (cellAbove && cellAbove.terrain === TerrainType.Sky) {
@@ -79,29 +99,45 @@ export const generateRoom = ({ widthInTiles, heightInTiles }: Level): Room => {
       }
     }
   });
+
+  // dig holes in the floor
+  floor = floor.filter((cell) => {
+    if (cell.x > 0 && cell.x < floor.length - 1) {
+      let c: Cell,
+        y: number,
+        columnCellCount = 0;
+      for (y = 0; y < heightInTiles - 1; y++) {
+        c = map[getIndex(cell.x, y)];
+        if (!c.isEmpty()) columnCellCount++;
+      }
+      if (columnCellCount < 2) return false;
+    }
+    return true;
+  });
+
+  while (floor.length > 3 && holesNum < MAX_HOLES) {
+    i = randomInt(1, floor.length - 2);
+    const cell = floor[i],
+      cellAbove = map[getIndex(cell.x, cell.y - 1)];
+    cell.terrain = TerrainType.Sky;
+    if (!cellAbove.isEmpty()) cellAbove.terrain = TerrainType.Sky;
+    floor.splice(i - 1, 3);
+    holesNum++;
+  }
+
   map.forEach((cell: Cell) => {
     if (cell.y > 1 && cell.terrain === TerrainType.Grass) {
-      const cellAbove = map[getIndex(cell.x, cell.y - 1)];
+      const cellAbove = getCellNear(cell, 0, -1)!;
       itemLocations.push(cellAbove);
     }
   });
 
-  const findStartLocation = () => {
-    const randomIndex = randomInt(0, itemLocations.length - 1),
-      location = itemLocations[randomIndex];
-    itemLocations.splice(randomIndex, 1);
-    return location;
-  };
-
   // addItems
-  cell = findStartLocation();
-  cell.item = ItemType.Player;
+  placeItem(ItemType.Exit);
   for (i = 0; i < 3; i++) {
-    cell = findStartLocation();
-    cell.item = ItemType.Treasure;
+    placeItem(ItemType.Treasure);
   }
-  cell = findStartLocation();
-  cell.item = ItemType.Exit;
+  placeItem(ItemType.Player);
 
   return {
     map,
