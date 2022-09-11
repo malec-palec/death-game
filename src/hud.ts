@@ -4,17 +4,17 @@ import { writeLine } from "./core/text";
 
 interface HUD extends DisplayObject {
   setRoomNo(value: number, hasGraves?: boolean): void;
-  setDeathCount(value: number): void;
+  setGoldCount(value: number): void;
 }
 
 export const createHUD = (width: number, assets: Array<HTMLCanvasElement>): HUD => {
   let roomNo = 0,
-    deathCount: string,
+    goldCount: string,
     sx: number;
   const height = ASSETS_SCALED_TILE_SIZE,
     scaledSize = ASSETS_SCALED_ITEM_SIZE,
     offset = (height - scaledSize) / 2,
-    scullIcon = assets[Tile.Scull],
+    goldIcon = assets[Tile.Gold],
     hud = createDisplayObject(
       {
         width,
@@ -22,19 +22,19 @@ export const createHUD = (width: number, assets: Array<HTMLCanvasElement>): HUD 
         render(context: CanvasRenderingContext2D) {
           writeLine(context, "ROOM " + roomNo, height, offset, scaledSize, "#FFF");
           sx = width - 4 * height;
-          sx += writeLine(context, deathCount, sx, offset, scaledSize, "#FFF");
-          context.drawImage(scullIcon, sx + offset * 2, offset);
+          sx += writeLine(context, goldCount, sx, offset, scaledSize, "#FFF");
+          context.drawImage(goldIcon, sx + offset * 2, -1);
         }
       },
       {
-        setRoomNo(value: number, hasGraves: false) {
+        setRoomNo(value: number) {
           roomNo = value;
         },
-        setDeathCount(value: number) {
-          deathCount = String(value).padStart(3, "0");
+        setGoldCount(value: number) {
+          goldCount = String(value).padStart(3, "0");
         }
       }
     );
-  hud.setDeathCount(0);
+  hud.setGoldCount(0);
   return hud;
 };

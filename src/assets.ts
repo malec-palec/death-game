@@ -2,12 +2,18 @@ const enum Tile {
   Wall0,
   Wall1,
   Wall2,
-  Empty,
+  Gold,
+  Empty0,
   DoorClosed,
-  DoorOpen,
-  Chest,
-  Scull,
-  Hero
+  DoorOpened,
+  ChestClosed,
+  ChestOpened,
+  Empty2,
+  Hero,
+  Snake,
+  Bat,
+  Spider,
+  Ghost
 }
 
 const ASSETS_TILE_SIZE = 10,

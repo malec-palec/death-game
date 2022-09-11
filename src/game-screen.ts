@@ -8,13 +8,13 @@ import { createRectShape } from "./core/shape";
 import { createSpite, Sprite } from "./core/sprite";
 import { Stage } from "./core/stage";
 import { smoothstep, tweenProp } from "./core/tween";
-import { createDoor, Door } from "./door";
 import { Game } from "./game";
 import { createHUD } from "./hud";
 import { createPlayer, Player } from "./player";
 import { Cell, generateRoom, ItemType, TerrainType } from "./room";
 import { UpdateScreen } from "./screen";
 import { playGameOverSound, playJumpSound } from "./sounds";
+import { createToggle, Toggle } from "./toggle";
 
 const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateScreen => {
   const { stage } = game,
@@ -22,17 +22,19 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
     hud = createHUD(stage.width, assets),
     blank = createRectShape({ width: stage.width, height: stage.height, alpha: 1 }, Color.BrownDark),
     nextRoom = () => {
+      keys = 0;
       if (stage.hasChildren()) stage.removeAll();
       ({ platforms, treasures, player, exit } = createLevel(stage, assets));
       stage.addMany(hud, ...platforms, ...treasures, exit, player);
     };
 
   let platforms: Array<DisplayObject>,
-    treasures: Array<DisplayObject>,
-    exit: Door,
+    treasures: Array<Toggle>,
+    exit: Toggle,
     player: Player,
-    deaths = 0,
-    roomNo = 0;
+    coins = 0,
+    roomNo = 0,
+    keys = 0;
 
   nextRoom();
 
@@ -118,20 +120,20 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
     if (player.x > stage.width - tileSize + player.width) player.x = tileSize / 2 - player.width;
     if (player.y + player.height > stage.height) player.y = -player.height;
 
-    treasures = treasures.filter((box) => {
-      if (hitTestRectangle(player, box)) {
-        hud.setDeathCount(++deaths);
-        stage.removeChild(box);
+    treasures.forEach((chest) => {
+      if (chest.isOff() && hitTestRectangle(player, chest)) {
+        hud.setGoldCount(++coins);
 
-        if (treasures.length === 1) exit.open();
+        const oldChestHeight = chest.height;
+        chest.turnOn();
+        chest.y -= chest.height - oldChestHeight;
 
-        return false;
-      } else {
-        return true;
+        keys++;
+        if (keys === 3) exit.turnOn();
       }
     });
 
-    if (exit.isOpened() && hitTestRectangle(player, exit)) {
+    if (exit.isOn() && hitTestRectangle(player, exit)) {
       hud.setRoomNo(++roomNo);
       playGameOverSound();
       nextRoom();
@@ -139,6 +141,7 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
   };
 };
 export { createGameScreen };
+
 const createLevel = (stage: Stage, assets: Array<HTMLCanvasElement>) => {
   const tileSize = ASSETS_SCALED_TILE_SIZE,
     level = {
@@ -147,9 +150,9 @@ const createLevel = (stage: Stage, assets: Array<HTMLCanvasElement>) => {
     },
     room = generateRoom(level),
     platforms: Array<DisplayObject> = [],
-    treasures: Array<DisplayObject> = [];
+    treasures: Array<Toggle> = [];
 
-  let player: Player, exit: Door;
+  let player: Player, exit: Toggle;
 
   room.map.forEach((cell) => {
     if (cell.terrain === TerrainType.Sky) return;
@@ -196,7 +199,7 @@ const createLevel = (stage: Stage, assets: Array<HTMLCanvasElement>) => {
 
   room.map.forEach((cell: Cell) => {
     if (cell.item !== undefined) {
-      let mapSprite: Sprite, image: HTMLCanvasElement;
+      let mapSprite: Sprite, image: HTMLCanvasElement, chest: Toggle;
       switch (cell.item) {
         case ItemType.Player:
           image = assets[Tile.Hero];
@@ -221,21 +224,23 @@ const createLevel = (stage: Stage, assets: Array<HTMLCanvasElement>) => {
           break;
 
         case ItemType.Treasure:
-          image = assets[Tile.Chest];
-          mapSprite = createSpite(
+          image = assets[Tile.ChestClosed];
+          chest = createToggle(
             image,
+            assets[Tile.ChestOpened],
+            Color.Gold,
             {
               x: cell.x * tileSize + (tileSize - image.width) / 2,
               y: cell.y * tileSize + (tileSize - image.height)
             },
-            Color.Gold
+            0.4
           );
-          treasures.push(mapSprite);
+          treasures.push(chest);
           break;
 
         case ItemType.Exit:
           image = assets[Tile.DoorClosed];
-          exit = createDoor(image, assets[Tile.DoorOpen], Color.Blood, {
+          exit = createToggle(image, assets[Tile.DoorOpened], Color.Blood, {
             x: cell.x * tileSize + (tileSize - image.width) / 2,
             y: cell.y * tileSize + (tileSize - image.height)
           });
