@@ -20,14 +20,23 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
   const { stage } = game,
     tileSize = ASSETS_SCALED_TILE_SIZE,
     hud = createHUD(stage.width, assets),
-    blank = createRectShape({ width: stage.width, height: stage.height, alpha: 1 }, Color.BrownDark);
+    blank = createRectShape({ width: stage.width, height: stage.height, alpha: 1 }, Color.BrownDark),
+    nextRoom = () => {
+      if (stage.hasChildren()) stage.removeAll();
+      ({ platforms, treasures, player, exit } = createLevel(stage, assets));
+      stage.addMany(hud, ...platforms, ...treasures, exit, player);
+    };
 
-  let { platforms, treasures, exit, player } = createLevel(stage, assets),
+  let platforms: Array<DisplayObject>,
+    treasures: Array<DisplayObject>,
+    exit: Door,
+    player: Player,
     deaths = 0,
     roomNo = 0;
 
-  stage.addMany(hud, ...platforms, ...treasures, exit, player, blank);
+  nextRoom();
 
+  stage.addChild(blank);
   tweenProp(
     45,
     (blank.alpha = 1),
@@ -40,9 +49,7 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
   const keyR = bindKey(82);
   keyR.release = () => {
     random.seed = random.nextInt();
-    stage.removeAll();
-    ({ platforms, treasures, player, exit } = createLevel(stage, assets));
-    stage.addMany(hud, ...platforms, ...treasures, exit, player);
+    nextRoom();
   };
 
   return (dt: number) => {
@@ -127,9 +134,7 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
     if (exit.isOpened() && hitTestRectangle(player, exit)) {
       hud.setRoomNo(++roomNo);
       playGameOverSound();
-      stage.removeAll();
-      ({ platforms, treasures, player, exit } = createLevel(stage, assets));
-      stage.addMany(hud, ...platforms, ...treasures, exit, player);
+      nextRoom();
     }
   };
 };

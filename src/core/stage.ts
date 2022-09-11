@@ -6,6 +6,7 @@ export interface Stage extends DisplayObject {
   removeChild(obj: DisplayObject): void;
   addMany(...all: DisplayObject[]): void;
   removeAll(): void;
+  hasChildren(): boolean;
 }
 
 const createStage = (width: number, height: number, x = 0, y = 0): Stage => {
@@ -49,6 +50,9 @@ const createStage = (width: number, height: number, x = 0, y = 0): Stage => {
       removeAll() {
         stage.children.forEach((child) => (child.stage = undefined));
         stage.children = [];
+      },
+      hasChildren() {
+        return stage.children.length > 0;
       }
     }
   );
