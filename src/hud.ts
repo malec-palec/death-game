@@ -14,7 +14,7 @@ export const createHUD = (width: number, assets: Array<HTMLCanvasElement>): HUD 
   const height = ASSETS_SCALED_TILE_SIZE,
     scaledSize = ASSETS_SCALED_ITEM_SIZE,
     offset = (height - scaledSize) / 2,
-    goldIcon = assets[Tile.Gold],
+    goldIcon = assets[Tile.CoinHUD],
     hud = createDisplayObject(
       {
         width,
@@ -23,7 +23,7 @@ export const createHUD = (width: number, assets: Array<HTMLCanvasElement>): HUD 
           writeLine(context, "ROOM " + roomNo, height, offset, scaledSize, "#FFF");
           sx = width - 4 * height;
           sx += writeLine(context, goldCount, sx, offset, scaledSize, "#FFF");
-          context.drawImage(goldIcon, sx + offset * 2, -1);
+          context.drawImage(goldIcon, sx + offset * 2, offset);
         }
       },
       {

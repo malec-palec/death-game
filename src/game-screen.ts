@@ -3,11 +3,12 @@ import { Color } from "./colors";
 import { CollisionSide, hitTestRectangle, rectangleCollision } from "./core/collision";
 import { DisplayObject } from "./core/display";
 import { bindKey, isLeftKeyDown, isRightKeyDown, isSpaceDown } from "./core/keyboard";
+import { createMovieClip } from "./core/movie-clip";
 import { random } from "./core/random";
 import { createRectShape } from "./core/shape";
 import { createSpite, Sprite } from "./core/sprite";
 import { Stage } from "./core/stage";
-import { smoothstep, tweenProp } from "./core/tween";
+import { easeOutBack, sine, smoothstep, tweenProp } from "./core/tween";
 import { Game } from "./game";
 import { createHUD } from "./hud";
 import { createPlayer, Player } from "./player";
@@ -15,6 +16,7 @@ import { Cell, generateRoom, ItemType, TerrainType } from "./room";
 import { UpdateScreen } from "./screen";
 import { playGameOverSound, playJumpSound } from "./sounds";
 import { createToggle, Toggle } from "./toggle";
+import { wait } from "./utils";
 
 const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateScreen => {
   const { stage } = game,
@@ -127,6 +129,46 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
         const oldChestHeight = chest.height;
         chest.turnOn();
         chest.y -= chest.height - oldChestHeight;
+
+        const drop = assets[Tile.Coin0];
+        // const loot = createLoot(drop, chest.x + (chest.width - drop.width) / 2 + ASSETS_BORDER_SIZE, chest.y);
+
+        const loot = createMovieClip(assets.slice(Tile.Coin0, Tile.Coin3 + 1), Color.Gold, {
+          x: chest.x + (chest.width - drop.width) / 2 + ASSETS_BORDER_SIZE,
+          y: chest.y
+        });
+
+        stage.addChild(loot);
+        tweenProp(
+          15,
+          (loot.alpha = 0),
+          1,
+          easeOutBack,
+          (ratio) => {
+            loot.y = chest.y - (tileSize / 2 + chest.height) * ratio;
+            loot.alpha = ratio;
+          },
+          () => {
+            loot.y = chest.y - (tileSize / 2 + chest.height);
+            loot.alpha = 1;
+
+            wait(350).then(() => {
+              tweenProp(
+                15,
+                (loot.alpha = 1),
+                0,
+                sine,
+                (ratio) => {
+                  loot.alpha = ratio;
+                },
+                () => {
+                  loot.alpha = 0;
+                  stage.removeChild(loot);
+                }
+              );
+            });
+          }
+        );
 
         keys++;
         if (keys === 3) exit.turnOn();

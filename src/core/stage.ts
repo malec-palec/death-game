@@ -16,6 +16,11 @@ const createStage = (width: number, height: number, x = 0, y = 0): Stage => {
       y,
       width,
       height,
+      update(dt: number) {
+        stage.children.forEach((obj) => {
+          obj.update(dt);
+        });
+      },
       render(context: CanvasRenderingContext2D) {
         stage.children.forEach((obj) => {
           context.save();

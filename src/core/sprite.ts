@@ -1,7 +1,7 @@
 import { createDisplayObject, DisplayObject } from "./display";
 
 export interface Sprite extends DisplayObject {
-  readonly image: CanvasImageSource;
+  image: CanvasImageSource;
   setImage(image: CanvasImageSource): void;
   color?: string;
 }
@@ -9,11 +9,22 @@ export interface Sprite extends DisplayObject {
 export type SpriteProps = Partial<
   Pick<
     DisplayObject,
-    "x" | "y" | "width" | "height" | "border" | "pivotX" | "pivotY" | "rotation" | "alpha" | "scaleX" | "scaleY"
+    | "x"
+    | "y"
+    | "width"
+    | "height"
+    | "border"
+    | "pivotX"
+    | "pivotY"
+    | "rotation"
+    | "alpha"
+    | "scaleX"
+    | "scaleY"
+    | "update"
   >
 >;
 
-export const colorizeImage = (image: CanvasImageSource, color: string): CanvasImageSource => {
+export const colorizeImage = (image: CanvasImageSource, color: string): HTMLCanvasElement => {
   const canvas = document.createElement("canvas");
   canvas.width = <number>image.width;
   canvas.height = <number>image.height;
@@ -46,7 +57,6 @@ const createSpite = (image: CanvasImageSource, props?: SpriteProps, color?: stri
           imageWidth,
           imageHeight
         );
-
         // if (sprite.color) {
         //   context.fillStyle = sprite.color;
         //   context.globalCompositeOperation = "multiply";

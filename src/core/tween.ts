@@ -1,6 +1,12 @@
 type UpdateTween = () => void;
 
 const smoothstep = (x: number) => x * x * (3 - 2 * x),
+  sine = (x: number) => Math.sin((x * Math.PI) / 2),
+  easeOutBack = (x: number): number => {
+    const c1 = 1.70158,
+      c3 = c1 + 1;
+    return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2);
+  },
   tweens: Array<UpdateTween> = [],
   tweenProp = (
     totalFrames: number,
@@ -33,4 +39,4 @@ const smoothstep = (x: number) => x * x * (3 - 2 * x),
     }
   };
 
-export { smoothstep, tweenProp, updateTweens };
+export { smoothstep, sine, easeOutBack, tweenProp, updateTweens };

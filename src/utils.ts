@@ -6,10 +6,15 @@ const loadImage = (url: string): Promise<HTMLImageElement> => {
       image.onerror = reject;
     });
   },
+  wait = (duration = 0) => {
+    return new Promise((resolve, reject) => {
+      setTimeout(resolve, duration);
+    });
+  },
   shuffle = <T>(array: Array<T>): void => {
     for (let i = array.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [array[i], array[j]] = [array[j], array[i]];
     }
   };
-export { loadImage };
+export { loadImage, wait, shuffle };

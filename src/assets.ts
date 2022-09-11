@@ -2,14 +2,23 @@ const enum Tile {
   Wall0,
   Wall1,
   Wall2,
-  Gold,
-  Empty0,
+  CoinHUD,
+
+  Coin0,
+  Coin1,
+  Coin2,
+  Coin3,
+
   DoorClosed,
   DoorOpened,
   ChestClosed,
   ChestOpened,
-  Empty2,
+
   Hero,
+  Key,
+  Empty,
+  Scroll,
+
   Snake,
   Bat,
   Spider,
@@ -22,9 +31,13 @@ const ASSETS_TILE_SIZE = 10,
   ASSETS_BORDER_SIZE = 2,
   ASSETS_SCALED_TILE_SIZE = ASSETS_TILE_SIZE * ASSETS_TILE_SCALE,
   ASSETS_SCALED_ITEM_SIZE = ASSETS_TILE_SIZE * ASSETS_ITEM_SCALE,
-  GROUP_SCALE_CROP = Tile.DoorClosed,
+  GROUP_CROP = Tile.DoorClosed,
   GROUP_ADD_BORDER = Tile.Hero,
-  processTile = (
+  scales = new Array(Tile.Ghost + 1).fill(ASSETS_ITEM_SCALE);
+scales[Tile.Wall0] = scales[Tile.Wall1] = scales[Tile.Wall2] = ASSETS_TILE_SCALE;
+scales[Tile.CoinHUD] = 5;
+
+const processTile = (
     image: HTMLImageElement,
     offX: number,
     offY: number,
@@ -98,8 +111,8 @@ const ASSETS_TILE_SIZE = 10,
           x * ASSETS_TILE_SIZE,
           y * ASSETS_TILE_SIZE,
           ASSETS_TILE_SIZE,
-          i < GROUP_SCALE_CROP ? ASSETS_TILE_SCALE : ASSETS_ITEM_SCALE,
-          i >= GROUP_SCALE_CROP,
+          scales[i],
+          i >= GROUP_CROP,
           i < GROUP_ADD_BORDER ? 0 : ASSETS_BORDER_SIZE
         );
       }
