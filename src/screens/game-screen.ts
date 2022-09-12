@@ -1,45 +1,52 @@
-import { ASSETS_BORDER_SIZE, ASSETS_SCALED_TILE_SIZE, Tile } from "./assets";
-import { Color } from "./colors";
-import { CollisionSide, hitTestRectangle, rectangleCollision } from "./core/collision";
-import { DisplayObject } from "./core/display";
-import { bindKey, isLeftKeyDown, isRightKeyDown, isSpaceDown } from "./core/keyboard";
-import { createMovieClip, MovieClip } from "./core/movie-clip";
-import { random } from "./core/random";
-import { createRectShape } from "./core/shape";
-import { createSpite, Sprite } from "./core/sprite";
-import { easeOutBack, sine, smoothstep, tweenProp } from "./core/tween";
-import { Game } from "./game";
-import { createHUD } from "./hud";
-import { createPlayer, Player } from "./player";
-import { Cell, generateRoom, ItemType, TerrainType } from "./room";
-import { UpdateScreen } from "./screen";
-import { playGameOverSound, playJumpSound } from "./sounds";
-import { createToggle, Toggle } from "./toggle";
-import { wait } from "./utils";
+import { ASSETS_BORDER_SIZE, ASSETS_SCALED_TILE_SIZE, Tile } from "../assets";
+import { Color } from "../colors";
+import { CollisionSide, hitTestRectangle, rectangleCollision } from "../core/collision";
+import { DisplayObject } from "../core/display";
+import { bindKey, isLeftKeyDown, isRightKeyDown, isSpaceDown } from "../core/keyboard";
+import { createMovieClip, MovieClip } from "../core/movie-clip";
+import { random } from "../core/random";
+import { createRectShape } from "../core/shape";
+import { createSpite, Sprite } from "../core/sprite";
+import { easeOutBack, sine, smoothstep, tweenProp } from "../core/tween";
+import { Game } from "../game";
+import { createHUD } from "../hud";
+import { createPlayer, Player } from "../player";
+import { Cell, generateRoom, ItemType, TerrainType } from "../room";
+import { playGameOverSound, playJumpSound } from "../sounds";
+import { createToggle, Toggle } from "../toggle";
+import { shuffle, wait } from "../utils";
+import { ScreenName, UpdateScreen } from "./screen";
+
+const enum DropType {
+  Coin,
+  Key,
+  Magic
+}
 
 const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateScreen => {
   const { stage } = game,
     tileSize = ASSETS_SCALED_TILE_SIZE,
+    borderSize = ASSETS_BORDER_SIZE,
     hud = createHUD(stage.width, assets),
     blank = createRectShape({ width: stage.width, height: stage.height }, Color.BrownDark);
 
   let platforms: Array<DisplayObject>,
     treasures: Array<Toggle>,
+    drops: Array<DropType>,
     exit: Toggle,
     portal: Sprite,
     player: Player,
     coins = 0,
     roomNo = 0,
-    keys: number,
-    t: number;
+    time: number;
 
   const initLevel = () => {
     if (stage.hasChildren()) stage.removeAll();
 
     platforms = [];
     treasures = [];
-    keys = 0;
-    t = 0;
+    drops = [];
+    time = 0;
 
     const level = {
         widthInTiles: stage.width / tileSize,
@@ -171,7 +178,11 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
       }
     });
 
-    stage.addMany(hud, ...platforms, ...treasures, exit, portal, player);
+    drops = new Array(treasures.length - 2).fill(DropType.Coin);
+    drops.push(DropType.Key, DropType.Magic);
+    shuffle(drops);
+
+    stage.addMany(hud, ...platforms, ...treasures, exit, player, portal);
   };
 
   initLevel();
@@ -193,8 +204,45 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
     initLevel();
   };
 
+  const destroy = () => {
+    stage.removeAll();
+
+    platforms = [];
+    treasures = [];
+    drops = [];
+  };
+
+  const gameOver = () => {
+    // Fade in
+    stage.addChild(blank);
+    tweenProp(
+      45,
+      (blank.alpha = 0),
+      1,
+      smoothstep,
+      (a) => (blank.alpha = a),
+      () => {
+        destroy();
+        game.changeScreen(ScreenName.HighScores, coins);
+      }
+    );
+  };
+
   // update
   return (dt: number) => {
+    if (portal.stage) {
+      time += dt;
+      portal.rotation += Math.PI / 90;
+      portal.scaleX = portal.scaleY = 1 + Math.sin(time) * 0.5;
+
+      if (player.stage && hitTestRectangle(player, portal)) {
+        stage.removeChild(player);
+        gameOver();
+      }
+    }
+
+    if (!player.stage) return;
+
     if (isLeftKeyDown) {
       player.accX = -0.2;
       player.scaleX = 1;
@@ -230,10 +278,6 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
     player.x += player.vx;
     player.y += player.vy;
 
-    t += dt / 1000;
-    portal.rotation += Math.PI / 90;
-    portal.scaleX = portal.scaleY = 1 + Math.sin(dt) * 0.5;
-
     platforms.forEach((platform) => {
       const collision = rectangleCollision(player, platform);
       if (collision !== undefined) {
@@ -260,36 +304,64 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
       }
     });
 
+    if (player.x < tileSize / 2 - player.width) player.x = stage.width - tileSize + player.width;
+    if (player.x > stage.width - tileSize + player.width) player.x = tileSize / 2 - player.width;
+    if (player.y + player.height > stage.height) player.y = -player.height;
+
     if (player.isOnGround && Math.abs(player.vx) > 0.2) {
       player.play();
     } else {
       player.stop();
     }
 
-    if (player.x < tileSize / 2 - player.width) player.x = stage.width - tileSize + player.width;
-    if (player.x > stage.width - tileSize + player.width) player.x = tileSize / 2 - player.width;
-    if (player.y + player.height > stage.height) player.y = -player.height;
-
     treasures.forEach((chest) => {
       if (chest.isOff() && hitTestRectangle(player, chest)) {
-        hud.setGoldCount(++coins);
+        hud.setCoinsCount(++coins);
 
         const oldChestHeight = chest.height;
         chest.turnOn();
         chest.y -= chest.height - oldChestHeight;
 
-        const drop = assets[Tile.Coin];
-        // const loot = createLoot(drop, chest.x + (chest.width - drop.width) / 2 + ASSETS_BORDER_SIZE, chest.y);
-
-        const loot = createMovieClip(
-          assets.slice(Tile.Coin, Tile.Coin3 + 1),
-          Color.Gold,
-          {
-            x: chest.x + (chest.width - drop.width) / 2 + ASSETS_BORDER_SIZE,
-            y: chest.y
-          },
-          true
-        );
+        let loot: Sprite, dropImage: HTMLCanvasElement;
+        const drop = drops.pop()!;
+        switch (drop) {
+          case DropType.Coin:
+            dropImage = assets[Tile.Coin];
+            loot = createMovieClip(
+              assets.slice(Tile.Coin, Tile.Coin3 + 1),
+              Color.Gold,
+              {
+                x: chest.x + (chest.width - dropImage.width) / 2 + borderSize,
+                y: chest.y
+              },
+              true
+            );
+            break;
+          case DropType.Key:
+            dropImage = assets[Tile.Key];
+            loot = createSpite(
+              dropImage,
+              {
+                x: chest.x + (chest.width - dropImage.width) / 2 + borderSize,
+                y: chest.y,
+                border: borderSize
+              },
+              Color.Gold
+            );
+            break;
+          case DropType.Magic:
+            dropImage = assets[Tile.Hat];
+            loot = createSpite(
+              dropImage,
+              {
+                x: chest.x + (chest.width - dropImage.width) / 2 + borderSize,
+                y: chest.y,
+                border: borderSize
+              },
+              Color.Blue
+            );
+            break;
+        }
         stage.addChild(loot);
         tweenProp(
           15,
@@ -322,8 +394,10 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
           }
         );
 
-        keys++;
-        if (keys === 3) exit.turnOn();
+        if (drop === DropType.Key) exit.turnOn();
+        else if (drop === DropType.Magic) {
+          if (!portal.stage) stage.addChild(portal);
+        }
       }
     });
 

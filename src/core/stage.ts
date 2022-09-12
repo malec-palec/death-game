@@ -46,6 +46,11 @@ const createStage = (width: number, height: number, x = 0, y = 0): Stage => {
         stage.children.push(obj);
       },
       removeChild(obj: DisplayObject) {
+        if (stage.children.indexOf(obj) < 0) {
+          console.warn("[Stage] Trying to delete wrong child");
+          return;
+        }
+
         stage.children.splice(stage.children.indexOf(obj), 1);
         obj.stage = undefined;
       },

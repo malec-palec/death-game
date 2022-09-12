@@ -27,7 +27,7 @@ const writeLine: WriteLineFunc = initFont(font),
         height: size,
         ...props,
         render(context: CanvasRenderingContext2D) {
-          writeLine(context, text.value, 0, 0, text.size, text.color);
+          text.width = writeLine(context, text.value, 0, 0, text.size, text.color);
         }
       },
       {

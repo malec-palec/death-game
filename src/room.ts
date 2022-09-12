@@ -25,6 +25,7 @@ export const enum ItemType {
 type Level = {
   widthInTiles: number;
   heightInTiles: number;
+  numChests?: number;
 };
 
 type Room = {
@@ -36,7 +37,7 @@ const randomInt = (min: number, max: number) => Math.floor(random.nextDouble() *
   cellIsGround = () => randomInt(0, 3) === 0;
 
 // room layout generator
-export const generateRoom = ({ widthInTiles, heightInTiles }: Level): Room => {
+export const generateRoom = ({ widthInTiles, heightInTiles, numChests = 5 }: Level): Room => {
   console.log("Seed:", random.seed);
 
   const MAX_HOLES = 3,
@@ -59,7 +60,6 @@ export const generateRoom = ({ widthInTiles, heightInTiles }: Level): Room => {
     };
 
   let i: number,
-    cell: Cell,
     holesNum = 0,
     floor: Array<Cell> = [];
 
@@ -135,7 +135,7 @@ export const generateRoom = ({ widthInTiles, heightInTiles }: Level): Room => {
 
   // addItems
   placeItem(ItemType.Exit);
-  for (i = 0; i < 3; i++) {
+  for (i = 0; i < numChests; i++) {
     placeItem(ItemType.Treasure);
   }
   placeItem(ItemType.Player);

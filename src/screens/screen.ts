@@ -1,6 +1,7 @@
 type UpdateScreen = (dt: number) => void;
 const enum ScreenName {
-  Title,
-  Game
+  Start,
+  Game,
+  HighScores
 }
 export { UpdateScreen, ScreenName };

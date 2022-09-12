@@ -8,5 +8,6 @@ export const enum Color {
   Grey = "#929992",
   Purple = "#e05ad1",
   White = "white",
-  Blue = "#5fb7f3"
+  Blue = "#5fb7f3",
+  Orange = "#ff880b"
 }

@@ -16,5 +16,6 @@ const loadImage = (url: string): Promise<HTMLImageElement> => {
       const j = Math.floor(Math.random() * (i + 1));
       [array[i], array[j]] = [array[j], array[i]];
     }
-  };
-export { loadImage, wait, shuffle };
+  },
+  padZeros = (count: number, value: number) => String(value).padStart(count, "0");
+export { loadImage, wait, shuffle, padZeros };

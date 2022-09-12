@@ -2,15 +2,16 @@ import { ASSETS_SCALED_TILE_SIZE } from "./assets";
 import { Color } from "./colors";
 import { createStage, Stage } from "./core/stage";
 import { updateTweens } from "./core/tween";
-import { createGameScreen } from "./game-screen";
-import { ScreenName, UpdateScreen } from "./screen";
-import { createTitleScreen } from "./title-screen";
+import { createGameScreen } from "./screens/game-screen";
+import { createHighScoresScreen } from "./screens/score-screen";
+import { ScreenName, UpdateScreen } from "./screens/screen";
+import { createTitleScreen as createStartScreen } from "./screens/start-screen";
 
 export interface Game {
   readonly stage: Stage;
   update(dt: number): void;
   render(): void;
-  changeScreen(name: ScreenName): void;
+  changeScreen(name: ScreenName, ...args: any[]): void;
 }
 
 const createGame = (canvas: HTMLCanvasElement, assets: Array<HTMLCanvasElement>): Game => {
@@ -31,18 +32,23 @@ const createGame = (canvas: HTMLCanvasElement, assets: Array<HTMLCanvasElement>)
 
         stage.render(context);
       },
-      changeScreen(name: ScreenName) {
+      changeScreen(name: ScreenName, ...params: any[]) {
+        let score: number;
         switch (name) {
-          case ScreenName.Title:
-            updateScreen = createTitleScreen(game);
+          case ScreenName.Start:
+            updateScreen = createStartScreen(game);
             break;
           case ScreenName.Game:
             updateScreen = createGameScreen(game, assets);
             break;
+          case ScreenName.HighScores:
+            score = params[0] ?? -1;
+            updateScreen = createHighScoresScreen(game, assets, score);
+            break;
         }
       }
     };
-  game.changeScreen(ScreenName.Game);
+  game.changeScreen(ScreenName.HighScores);
   return game;
 };
 

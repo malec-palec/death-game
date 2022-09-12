@@ -3,9 +3,12 @@ import ATLAS_URL from "./assets/atlas.png";
 import { random } from "./core/random";
 import { initRenderer } from "./core/renderer";
 import { createGame } from "./game";
+import { loadRecords } from "./screens/score-screen";
 import { loadImage } from "./utils";
 
 const main = async () => {
+  loadRecords();
+
   const seed = Math.floor(Math.random() * 2147483646);
   // const seed = ;
   random.seed = seed;
