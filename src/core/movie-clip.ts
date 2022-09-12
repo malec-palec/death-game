@@ -28,6 +28,7 @@ export const createMovieClip = (
         }
       }
     });
+  sprite.color = color;
   return Object.assign(sprite, {
     play() {
       isPlaying = true;

@@ -15,13 +15,13 @@ const enum Tile {
   DoorOpened,
   ChestClosed,
   ChestOpened,
-  Empty2,
+  Empty,
 
   Hero,
   Hero1,
   Hero2,
   Key,
-  Empty3,
+  Grave,
 
   Hat,
   Vortex,

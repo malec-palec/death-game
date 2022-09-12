@@ -33,7 +33,7 @@ const createGame = (canvas: HTMLCanvasElement, assets: Array<HTMLCanvasElement>)
         stage.render(context);
       },
       changeScreen(name: ScreenName, ...params: any[]) {
-        let score: number;
+        let score: number, color: string;
         switch (name) {
           case ScreenName.Start:
             updateScreen = createStartScreen(game, assets);
@@ -43,12 +43,13 @@ const createGame = (canvas: HTMLCanvasElement, assets: Array<HTMLCanvasElement>)
             break;
           case ScreenName.HighScores:
             score = params[0] ?? -1;
-            updateScreen = createHighScoresScreen(game, assets, score);
+            color = params[1] ?? Color.White;
+            updateScreen = createHighScoresScreen(game, assets, score, color);
             break;
         }
       }
     };
-  game.changeScreen(ScreenName.Start);
+  game.changeScreen(ScreenName.Game);
   return game;
 };
 

@@ -120,5 +120,8 @@ void main() {
   if (curved_uv.y < 0.0 || curved_uv.y > 1.0)
     col*= 0.0;
 
+  // brightness+
+  col *= vec3(1.1);
+
   gl_FragColor = vec4(col, 1.0);
 }

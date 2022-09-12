@@ -47,7 +47,7 @@ const createStage = (width: number, height: number, x = 0, y = 0): Stage => {
       },
       removeChild(obj: DisplayObject) {
         if (stage.children.indexOf(obj) < 0) {
-          console.warn("[Stage] Trying to delete wrong child");
+          console.warn("[Stage] Trying to delete odd child");
           return;
         }
 

@@ -66,14 +66,15 @@ const createSpite = (image: CanvasImageSource, props?: SpriteProps, color?: stri
     },
     {
       image,
-      setImage(image: CanvasImageSource) {
+      color,
+      setImage(image: CanvasImageSource, newColor?: string) {
+        if (newColor) sprite.color = newColor;
         imageWidth = <number>image.width;
         imageHeight = <number>image.height;
         sprite.image = sprite.color ? colorizeImage(image, sprite.color) : image;
         sprite.width = imageWidth - sprite.border * 2;
         sprite.height = imageHeight - sprite.border * 2;
-      },
-      color
+      }
     }
   );
   sprite.width -= sprite.border * 2;

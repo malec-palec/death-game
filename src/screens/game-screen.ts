@@ -7,6 +7,7 @@ import { createMovieClip, MovieClip } from "../core/movie-clip";
 import { random } from "../core/random";
 import { createRectShape } from "../core/shape";
 import { createSpite, Sprite } from "../core/sprite";
+import { createText } from "../core/text";
 import { easeOutBack, sine, smoothstep, tweenProp } from "../core/tween";
 import { Game } from "../game";
 import { createHUD } from "../hud";
@@ -28,7 +29,8 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
     tileSize = ASSETS_SCALED_TILE_SIZE,
     borderSize = ASSETS_BORDER_SIZE,
     hud = createHUD(stage.width, assets),
-    blank = createRectShape({ width: stage.width, height: stage.height }, Color.BrownDark);
+    blank = createRectShape({ width: stage.width, height: stage.height }, Color.BrownDark),
+    winLabel = createText("YOU WIN!", tileSize * 2, { width: stage.width }, Color.Beige);
 
   let platforms: Array<DisplayObject>,
     treasures: Array<Toggle>,
@@ -36,11 +38,12 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
     exit: Toggle,
     portal: Sprite,
     player: Player,
-    coins = 0,
+    // runs = 0,
     roomNo = 0,
+    coins = 0,
     time: number;
 
-  const initLevel = () => {
+  const initLevel = (playerColor: string = Color.Purple) => {
     if (stage.hasChildren()) stage.removeAll();
 
     platforms = [];
@@ -107,7 +110,7 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
             // TODO: optimize
             heroAnim = createMovieClip(
               [assets[Tile.Hero], assets[Tile.Hero1], assets[Tile.Hero], assets[Tile.Hero2]],
-              Color.Purple,
+              playerColor,
               {
                 x: cell.x * tileSize + (tileSize - image.width) / 2,
                 y: cell.y * tileSize + (tileSize - image.height),
@@ -127,7 +130,7 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
             //   },
             //   Color.Purple
             // );
-            player = createPlayer(heroAnim, {
+            player = createPlayer(heroAnim, assets[Tile.Grave], {
               frictionX: 1,
               frictionY: 1,
               gravity: 0.3,
@@ -178,14 +181,18 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
       }
     });
 
-    drops = new Array(treasures.length - 2).fill(DropType.Coin);
-    drops.push(DropType.Key, DropType.Magic);
+    drops = new Array(treasures.length - 1).fill(DropType.Coin);
+    if (Math.random() < 0.1) drops[0] = DropType.Magic;
+    drops.push(DropType.Key);
     shuffle(drops);
 
     stage.addMany(hud, ...platforms, ...treasures, exit, player, portal);
   };
 
-  initLevel();
+  const playerColors = [Color.Beige, Color.BlueBright, Color.GreenBright, Color.Orange, Color.Purple, Color.Red];
+  shuffle(playerColors);
+
+  initLevel(playerColors[0]);
 
   // Fade out
   stage.addChild(blank);
@@ -201,7 +208,18 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
   const keyR = bindKey(82);
   keyR.release = () => {
     random.seed = random.nextInt();
-    initLevel();
+    initLevel(player.color);
+
+    // TODO: rest to room0
+    // destroy();
+    // game.changeScreen(ScreenName.Start);
+  };
+
+  const keyD = bindKey(68);
+  keyD.release = () => {
+    player.die();
+    // hud.setRoomNo((roomNo = 0));
+    // hud.setCoinsCount((coins = 0));
   };
 
   const destroy = () => {
@@ -215,15 +233,21 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
   const gameOver = () => {
     // Fade in
     stage.addChild(blank);
+    stage.addChild(winLabel);
+    winLabel.y = (stage.height - winLabel.height) / 2;
+
     tweenProp(
       45,
-      (blank.alpha = 0),
+      (blank.alpha = winLabel.alpha = 0),
       1,
       smoothstep,
-      (a) => (blank.alpha = a),
+      (a) => {
+        blank.alpha = winLabel.alpha = a;
+        winLabel.x = (stage.width - winLabel.width) / 2;
+      },
       () => {
         destroy();
-        game.changeScreen(ScreenName.HighScores, coins);
+        game.changeScreen(ScreenName.HighScores, coins, player.color);
       }
     );
   };
@@ -243,22 +267,24 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
 
     if (!player.stage) return;
 
-    if (isLeftKeyDown) {
-      player.accX = -0.2;
-      player.scaleX = 1;
-    } else if (isRightKeyDown) {
-      player.accX = 0.2;
-      player.scaleX = -1;
-    } else {
-      player.accX = 0;
-    }
-
-    if (isSpaceDown) {
-      if (player.isOnGround) {
-        playJumpSound();
-        player.vy += player.jumpForce;
-        player.isOnGround = false;
-        player.frictionX = 1;
+    // controls
+    if (player.isAlive()) {
+      if (isLeftKeyDown) {
+        player.accX = -0.2;
+        player.scaleX = 1;
+      } else if (isRightKeyDown) {
+        player.accX = 0.2;
+        player.scaleX = -1;
+      } else {
+        player.accX = 0;
+      }
+      if (isSpaceDown) {
+        if (player.isOnGround) {
+          playJumpSound();
+          player.vy += player.jumpForce;
+          player.isOnGround = false;
+          player.frictionX = 1;
+        }
       }
     }
 
@@ -278,6 +304,7 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
     player.x += player.vx;
     player.y += player.vy;
 
+    // collision
     platforms.forEach((platform) => {
       const collision = rectangleCollision(player, platform);
       if (collision !== undefined) {
@@ -303,17 +330,21 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
         }
       }
     });
-
+    // clamp
     if (player.x < tileSize / 2 - player.width) player.x = stage.width - tileSize + player.width;
     if (player.x > stage.width - tileSize + player.width) player.x = tileSize / 2 - player.width;
     if (player.y + player.height > stage.height) player.y = -player.height;
 
+    if (!player.isAlive()) return;
+
+    // anim
     if (player.isOnGround && Math.abs(player.vx) > 0.2) {
       player.play();
     } else {
       player.stop();
     }
 
+    // loot
     treasures.forEach((chest) => {
       if (chest.isOff() && hitTestRectangle(player, chest)) {
         hud.setCoinsCount(++coins);
@@ -405,7 +436,7 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
       hud.setRoomNo(++roomNo);
       playGameOverSound();
 
-      initLevel();
+      initLevel(player.color);
     }
   };
 };

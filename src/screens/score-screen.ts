@@ -9,15 +9,20 @@ import { Game } from "../game";
 import { padZeros } from "../utils";
 import { ScreenName, UpdateScreen } from "./screen";
 
-type Record = [number, string];
+type Record = [number, string, string];
 
 const STORAGE_KEY = "enchanted_dungeon_scores";
 let records: Array<Record> = [];
 
-const createHighScoresScreen = (game: Game, assets: Array<HTMLCanvasElement>, score: number): UpdateScreen => {
+const createHighScoresScreen = (
+    game: Game,
+    assets: Array<HTMLCanvasElement>,
+    score: number,
+    color: string
+  ): UpdateScreen => {
     const tileSize = ASSETS_SCALED_TILE_SIZE,
       textSize = ASSETS_SCALED_ITEM_SIZE,
-      maxLines = 5;
+      maxLines = 6;
 
     let i: number,
       offY = tileSize,
@@ -25,41 +30,56 @@ const createHighScoresScreen = (game: Game, assets: Array<HTMLCanvasElement>, sc
       t = 0;
 
     const { stage } = game,
-      title = createText("HIGH SCORES", tileSize, { width: stage.width, y: offY }),
+      title = createText("HIGH SCORES", tileSize, { width: stage.width, y: offY }, Color.Beige),
       candleLeft = createSpite(assets[Tile.Candle], { y: offY }, Color.Orange),
       candleRight = createSpite(assets[Tile.Candle], { y: offY, pivotX: 0.5, scaleX: -1 }, Color.Orange),
-      backLabel = createText("SPACE", tileSize / 2, { width: stage.width, y: stage.height - tileSize * 2 }),
+      backLabel = createText("SPACE", tileSize / 2, { width: stage.width, y: stage.height - tileSize * 1.5 }),
       blank = createRectShape({ width: stage.width, height: stage.height }, Color.BrownDark);
     offY += tileSize * 2;
 
     if (score > 0) {
       const name = prompt("Please, enter your name (8 chars max):", "Player 1");
-      if (name) records.push([score, name.substring(0, 8)]);
+      if (name) records.push([score, name.substring(0, 8), color]);
     }
     records.sort((a, b) => b[0] - a[0]);
 
     saveRecords();
 
     for (i = 0; i < Math.min(records.length, maxLines); i++) {
-      const [score, name] = records[i],
+      const [score, name, color] = records[i],
         y = offY + i * textSize * 1.5,
         offX = tileSize / 2,
         screenWidth = stage.width - tileSize,
-        posLabel = createText(padZeros(2, i + 1), textSize, {
-          width: stage.width,
-          x: offX + (screenWidth / 10) * 2,
-          y
-        }),
-        scoreLabel = createText(padZeros(7, score), textSize, {
-          width: stage.width,
-          x: offX + (screenWidth / 10) * 3,
-          y
-        }),
-        nameLabel = createText(name.toUpperCase(), textSize, {
-          width: stage.width,
-          x: offX + (screenWidth / 10) * 6,
-          y
-        });
+        posLabel = createText(
+          padZeros(2, i + 1),
+          textSize,
+          {
+            width: stage.width,
+            x: offX + (screenWidth / 10) * 2,
+            y
+          },
+          color
+        ),
+        scoreLabel = createText(
+          padZeros(7, score),
+          textSize,
+          {
+            width: stage.width,
+            x: offX + (screenWidth / 10) * 3,
+            y
+          },
+          color
+        ),
+        nameLabel = createText(
+          name.toUpperCase(),
+          textSize,
+          {
+            width: stage.width,
+            x: offX + (screenWidth / 10) * 6,
+            y
+          },
+          color
+        );
       stage.addMany(posLabel, scoreLabel, nameLabel);
     }
 
