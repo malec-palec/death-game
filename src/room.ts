@@ -25,6 +25,7 @@ export const enum ItemType {
 type Level = {
   widthInTiles: number;
   heightInTiles: number;
+  roomNo: number;
   numChests?: number;
 };
 
@@ -37,7 +38,7 @@ const randomInt = (min: number, max: number) => Math.floor(random.nextDouble() *
   cellIsGround = () => randomInt(0, 3) === 0;
 
 // room layout generator
-export const generateRoom = ({ widthInTiles, heightInTiles, numChests = 5 }: Level): Room => {
+export const generateRoom = ({ widthInTiles, heightInTiles, numChests = 5, roomNo }: Level): Room => {
   console.log("Seed:", random.seed);
 
   const MAX_HOLES = 3,
@@ -45,6 +46,7 @@ export const generateRoom = ({ widthInTiles, heightInTiles, numChests = 5 }: Lev
     itemLocations: Array<Cell> = [],
     numCells = heightInTiles * widthInTiles,
     getIndex = (x: number, y: number) => x + y * widthInTiles,
+    getCellAt = (px: number, py: number) => map[getIndex(px, py)],
     getCellNear = (c: Cell, dx: number, dy: number): Cell | undefined => map[getIndex(c.x + dx, c.y + dy)],
     placeItem = (type: ItemType): Cell => {
       const randIndex = randomInt(0, itemLocations.length - 1),
@@ -62,6 +64,45 @@ export const generateRoom = ({ widthInTiles, heightInTiles, numChests = 5 }: Lev
   let i: number,
     holesNum = 0,
     floor: Array<Cell> = [];
+
+  if (roomNo === 0) {
+    for (i = 0; i < numCells; i++) {
+      const cell: Cell = {
+        x: i % widthInTiles,
+        y: Math.floor(i / widthInTiles),
+        terrain: TerrainType.Sky,
+        isEmpty() {
+          return this.terrain === TerrainType.Sky;
+        }
+      };
+      map.push(cell);
+    }
+
+    map.forEach((cell: Cell) => {
+      if (cell.y === heightInTiles - 1) {
+        cell.terrain = TerrainType.Border;
+      }
+    });
+
+    const floorLevel = heightInTiles - 2;
+    getCellAt(2, floorLevel).item = ItemType.Player;
+    getCellAt(4, floorLevel).item =
+      getCellAt(5, floorLevel).item =
+      getCellAt(6, floorLevel).item =
+      getCellAt(8, floorLevel).item =
+        ItemType.Treasure;
+    const doorCell = getCellAt(widthInTiles - 5, floorLevel - 1);
+    doorCell.item = ItemType.Exit;
+    getCellNear(doorCell, 1, 1)!.terrain =
+      getCellNear(doorCell, 0, 1)!.terrain =
+      getCellNear(doorCell, -1, 1)!.terrain =
+        TerrainType.Grass;
+
+    return {
+      map,
+      itemLocations
+    };
+  }
 
   // makeMap
   for (i = 0; i < numCells; i++) {

@@ -47,7 +47,7 @@ const createStage = (width: number, height: number, x = 0, y = 0): Stage => {
       },
       removeChild(obj: DisplayObject) {
         if (stage.children.indexOf(obj) < 0) {
-          console.warn("[Stage] Trying to delete odd child");
+          console.warn("[Stage] Trying to delete odd child", obj);
           return;
         }
 
@@ -55,7 +55,7 @@ const createStage = (width: number, height: number, x = 0, y = 0): Stage => {
         obj.stage = undefined;
       },
       addMany(...all: DisplayObject[]) {
-        all.forEach((obj) => stage.addChild(obj));
+        all.forEach((obj) => obj && stage.addChild(obj));
       },
       removeAll() {
         stage.children.forEach((child) => (child.stage = undefined));

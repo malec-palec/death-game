@@ -13,7 +13,7 @@ import { Game } from "../game";
 import { createHUD } from "../hud";
 import { createPlayer, Player } from "../player";
 import { Cell, generateRoom, ItemType, TerrainType } from "../room";
-import { playGameOverSound, playJumpSound } from "../sounds";
+import { playCoinSound, playJumpSound } from "../sounds";
 import { createToggle, Toggle } from "../toggle";
 import { shuffle, wait } from "../utils";
 import { ScreenName, UpdateScreen } from "./screen";
@@ -36,14 +36,14 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
     treasures: Array<Toggle>,
     drops: Array<DropType>,
     exit: Toggle,
-    portal: Sprite,
+    portal: Sprite | undefined,
     player: Player,
     // runs = 0,
-    roomNo = 0,
+    room = 0,
     coins = 0,
     time: number;
 
-  const initLevel = (playerColor: string = Color.Purple) => {
+  const initLevel = (playerColor: string = Color.Purple, roomNo = 0) => {
     if (stage.hasChildren()) stage.removeAll();
 
     platforms = [];
@@ -53,7 +53,8 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
 
     const level = {
         widthInTiles: stage.width / tileSize,
-        heightInTiles: stage.height / tileSize
+        heightInTiles: stage.height / tileSize,
+        roomNo
       },
       room = generateRoom(level);
 
@@ -181,12 +182,16 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
       }
     });
 
-    drops = new Array(treasures.length - 1).fill(DropType.Coin);
-    if (Math.random() < 0.1) drops[0] = DropType.Magic;
-    drops.push(DropType.Key);
-    shuffle(drops);
+    if (roomNo === 0) {
+      drops = [DropType.Key, DropType.Coin, DropType.Coin, DropType.Coin];
+    } else {
+      drops = new Array(treasures.length - 1).fill(DropType.Coin);
+      if (Math.random() < 0.1) drops[0] = DropType.Magic;
+      drops.push(DropType.Key);
+      shuffle(drops);
+    }
 
-    stage.addMany(hud, ...platforms, ...treasures, exit, player, portal);
+    stage.addMany(hud, ...platforms, ...treasures, exit, player);
   };
 
   const playerColors = [Color.Beige, Color.BlueBright, Color.GreenBright, Color.Orange, Color.Purple, Color.Red];
@@ -208,18 +213,17 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
   const keyR = bindKey(82);
   keyR.release = () => {
     random.seed = random.nextInt();
-    initLevel(player.color);
 
-    // TODO: rest to room0
-    // destroy();
-    // game.changeScreen(ScreenName.Start);
+    hud.setRoomNo((room = 0));
+    hud.setCoinsCount((coins = 0));
+
+    shuffle(playerColors);
+    initLevel(playerColors[0]);
   };
 
   const keyD = bindKey(68);
   keyD.release = () => {
     player.die();
-    // hud.setRoomNo((roomNo = 0));
-    // hud.setCoinsCount((coins = 0));
   };
 
   const destroy = () => {
@@ -254,7 +258,7 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
 
   // update
   return (dt: number) => {
-    if (portal.stage) {
+    if (portal && portal.stage) {
       time += dt;
       portal.rotation += Math.PI / 90;
       portal.scaleX = portal.scaleY = 1 + Math.sin(time) * 0.5;
@@ -348,6 +352,7 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
     treasures.forEach((chest) => {
       if (chest.isOff() && hitTestRectangle(player, chest)) {
         hud.setCoinsCount(++coins);
+        playCoinSound();
 
         const oldChestHeight = chest.height;
         chest.turnOn();
@@ -418,7 +423,7 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
                 },
                 () => {
                   loot.alpha = 0;
-                  stage.removeChild(loot);
+                  if (loot.stage) stage.removeChild(loot);
                 }
               );
             });
@@ -427,16 +432,14 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
 
         if (drop === DropType.Key) exit.turnOn();
         else if (drop === DropType.Magic) {
-          if (!portal.stage) stage.addChild(portal);
+          if (portal && !portal.stage) stage.addChild(portal);
         }
       }
     });
 
     if (exit.isOn() && hitTestRectangle(player, exit)) {
-      hud.setRoomNo(++roomNo);
-      playGameOverSound();
-
-      initLevel(player.color);
+      hud.setRoomNo(++room);
+      initLevel(player.color, room);
     }
   };
 };
