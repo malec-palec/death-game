@@ -1,8 +1,7 @@
 import { addComponents, GameObjectComponent, getGameObjectComponent } from "./components";
-import { DisplayObject } from "./core/display";
-import { Sprite } from "./core/sprite";
+import { MovieClip } from "./core/movie-clip";
 
-export interface Player extends DisplayObject, GameObjectComponent {
+export interface Player extends MovieClip, GameObjectComponent {
   frictionX: number;
   frictionY: number;
   gravity: number;
@@ -12,6 +11,6 @@ export interface Player extends DisplayObject, GameObjectComponent {
 
 export type PlayerProps = Pick<Player, "frictionX" | "frictionY" | "gravity" | "jumpForce" | "isOnGround">;
 
-export const createPlayer = (shape: Sprite, props: PlayerProps): Player => {
-  return addComponents(shape, getGameObjectComponent(), props);
+export const createPlayer = (mc: MovieClip, props: PlayerProps): Player => {
+  return addComponents(mc, getGameObjectComponent(), props);
 };

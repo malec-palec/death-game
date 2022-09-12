@@ -18,7 +18,8 @@ export const enum TerrainType {
 export const enum ItemType {
   Player,
   Treasure,
-  Exit
+  Exit,
+  Portal
 }
 
 type Level = {
@@ -138,6 +139,7 @@ export const generateRoom = ({ widthInTiles, heightInTiles }: Level): Room => {
     placeItem(ItemType.Treasure);
   }
   placeItem(ItemType.Player);
+  placeItem(ItemType.Portal);
 
   return {
     map,
