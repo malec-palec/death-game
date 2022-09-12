@@ -1,8 +1,9 @@
-const LEFT = 37,
-  RIGHT = 39,
-  UP = 38,
-  DOWN = 40,
-  SPACE = 32;
+const KEY_LEFT = 37,
+  KEY_RIGHT = 39,
+  KEY_UP = 38,
+  KEY_DOWN = 40,
+  SPACE = 32,
+  ENTER = 13;
 
 let isLeftKeyDown = false,
   isRightKeyDown = false,
@@ -12,16 +13,16 @@ let isLeftKeyDown = false,
 
 onkeydown = (event: KeyboardEvent) => {
   const code = event.keyCode;
-  if (code === LEFT) {
+  if (code === KEY_LEFT) {
     isLeftKeyDown = true;
   }
-  if (code === RIGHT) {
+  if (code === KEY_RIGHT) {
     isRightKeyDown = true;
   }
-  if (code === UP) {
+  if (code === KEY_UP) {
     isUpKeyDown = true;
   }
-  if (code === DOWN) {
+  if (code === KEY_DOWN) {
     isDownKeyDown = true;
   }
   if (code === SPACE) {
@@ -31,16 +32,16 @@ onkeydown = (event: KeyboardEvent) => {
 
 onkeyup = (event: KeyboardEvent) => {
   const code = event.keyCode;
-  if (code === LEFT) {
+  if (code === KEY_LEFT) {
     isLeftKeyDown = false;
   }
-  if (code === RIGHT) {
+  if (code === KEY_RIGHT) {
     isRightKeyDown = false;
   }
-  if (code === UP) {
+  if (code === KEY_UP) {
     isUpKeyDown = false;
   }
-  if (code === DOWN) {
+  if (code === KEY_DOWN) {
     isDownKeyDown = false;
   }
   if (code === SPACE) {
@@ -85,4 +86,16 @@ export const bindKey = (keyCode: number): Key => {
   return key;
 };
 
-export { isLeftKeyDown, isRightKeyDown, isUpKeyDown, isDownKeyDown, isSpaceDown };
+export {
+  isLeftKeyDown,
+  isRightKeyDown,
+  isUpKeyDown,
+  isDownKeyDown,
+  isSpaceDown,
+  KEY_LEFT,
+  KEY_RIGHT,
+  KEY_UP,
+  KEY_DOWN,
+  SPACE,
+  ENTER
+};

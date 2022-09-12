@@ -5,7 +5,7 @@ import { updateTweens } from "./core/tween";
 import { createGameScreen } from "./screens/game-screen";
 import { createHighScoresScreen } from "./screens/score-screen";
 import { ScreenName, UpdateScreen } from "./screens/screen";
-import { createTitleScreen as createStartScreen } from "./screens/start-screen";
+import { createStartScreen } from "./screens/start-screen";
 
 export interface Game {
   readonly stage: Stage;
@@ -36,7 +36,7 @@ const createGame = (canvas: HTMLCanvasElement, assets: Array<HTMLCanvasElement>)
         let score: number;
         switch (name) {
           case ScreenName.Start:
-            updateScreen = createStartScreen(game);
+            updateScreen = createStartScreen(game, assets);
             break;
           case ScreenName.Game:
             updateScreen = createGameScreen(game, assets);
@@ -48,7 +48,7 @@ const createGame = (canvas: HTMLCanvasElement, assets: Array<HTMLCanvasElement>)
         }
       }
     };
-  game.changeScreen(ScreenName.HighScores);
+  game.changeScreen(ScreenName.Start);
   return game;
 };
 

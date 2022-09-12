@@ -9,7 +9,7 @@ const enum Tile {
   Coin1,
   Coin2,
   Coin3,
-  Empty1,
+  Scull,
 
   DoorClosed,
   DoorOpened,

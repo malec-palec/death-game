@@ -28,7 +28,7 @@ const createHighScoresScreen = (game: Game, assets: Array<HTMLCanvasElement>, sc
       title = createText("HIGH SCORES", tileSize, { width: stage.width, y: offY }),
       candleLeft = createSpite(assets[Tile.Candle], { y: offY }, Color.Orange),
       candleRight = createSpite(assets[Tile.Candle], { y: offY, pivotX: 0.5, scaleX: -1 }, Color.Orange),
-      backLabel = createText("-= PRESS SPACE =-", tileSize / 2, { width: stage.width, y: stage.height - tileSize }),
+      backLabel = createText("SPACE", tileSize / 2, { width: stage.width, y: stage.height - tileSize * 2 }),
       blank = createRectShape({ width: stage.width, height: stage.height }, Color.BrownDark);
     offY += tileSize * 2;
 
