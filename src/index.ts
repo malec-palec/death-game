@@ -1,6 +1,5 @@
 import { createAssets } from "./assets";
 import ATLAS_URL from "./assets/atlas.png";
-import { random } from "./core/random";
 import { initRenderer } from "./core/renderer";
 import { createGame } from "./game";
 import { loadRecords } from "./screens/score-screen";
@@ -9,16 +8,10 @@ import { loadImage } from "./utils";
 const main = async () => {
   loadRecords();
 
-  const seed = Math.floor(Math.random() * 2147483646);
-  // const seed = ;
-  random.seed = seed;
-
   const atlas = await loadImage(ATLAS_URL),
     assets = createAssets(atlas),
-    game = createGame(g, assets);
-
-  const render = initRenderer(g);
-  // g.style.cssText = "display:block;margin:0 auto;height:100%;";
+    game = createGame(g, assets),
+    render = initRenderer(g);
 
   let focused = true,
     now: number,

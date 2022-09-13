@@ -15,7 +15,7 @@ import { createPlayer, Player } from "../player";
 import { Cell, generateRoom, ItemType, TerrainType } from "../room";
 import { playCoinSound, playJumpSound } from "../sounds";
 import { createToggle, Toggle } from "../toggle";
-import { shuffle, wait } from "../utils";
+import { getRandomElement, shuffle, wait } from "../utils";
 import { ScreenName, UpdateScreen } from "./screen";
 
 const enum DropType {
@@ -23,6 +23,15 @@ const enum DropType {
   Key,
   Magic
 }
+
+type RoomState = {
+  coins: number;
+  x: number;
+  y: number;
+  color: string;
+  graveTile: Tile;
+  seed: number;
+};
 
 const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateScreen => {
   const { stage } = game,
@@ -36,21 +45,35 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
     treasures: Array<Toggle>,
     drops: Array<DropType>,
     exit: Toggle,
-    portal: Sprite | undefined,
     player: Player,
-    // runs = 0,
+    portal: Sprite | undefined,
+    lastGrave: Sprite | undefined,
     room = 0,
     coins = 0,
-    time: number;
+    lastRoomSeed = -1,
+    time: number,
+    inTransition = false;
 
-  const initLevel = (playerColor: string = Color.Purple, roomNo = 0) => {
+  const states: Array<RoomState> = [];
+
+  const initLevel = (playerColor: string = Color.Purple, playerGraveTile: Tile = Tile.Grave, roomNo = 0) => {
     if (stage.hasChildren()) stage.removeAll();
 
     platforms = [];
     treasures = [];
     drops = [];
     time = 0;
+    lastGrave = portal = undefined;
 
+    if (roomNo in states) {
+      const state = states[roomNo];
+      random.seed = state.seed;
+      lastGrave = createSpite(assets[state.graveTile], { x: state.x, y: state.y }, state.color);
+    } else {
+      random.seed = Math.floor(Math.random() * 2147483646);
+    }
+
+    lastRoomSeed = random.seed;
     const level = {
         widthInTiles: stage.width / tileSize,
         heightInTiles: stage.height / tileSize,
@@ -108,7 +131,7 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
           case ItemType.Player:
             image = assets[Tile.Hero];
 
-            // TODO: optimize
+            // TODO: re-do
             heroAnim = createMovieClip(
               [assets[Tile.Hero], assets[Tile.Hero1], assets[Tile.Hero], assets[Tile.Hero2]],
               playerColor,
@@ -120,18 +143,7 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
                 border: ASSETS_BORDER_SIZE
               }
             );
-            // mapSprite = createSpite(
-            //   image,
-            //   {
-            //     x: cell.x * tileSize + (tileSize - image.width) / 2,
-            //     y: cell.y * tileSize + (tileSize - image.height),
-            //     pivotX: 0.5,
-            //     pivotY: 0.5,
-            //     border: ASSETS_BORDER_SIZE
-            //   },
-            //   Color.Purple
-            // );
-            player = createPlayer(heroAnim, assets[Tile.Grave], {
+            player = createPlayer(heroAnim, assets[playerGraveTile], playerGraveTile, {
               frictionX: 1,
               frictionY: 1,
               gravity: 0.3,
@@ -191,13 +203,15 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
       shuffle(drops);
     }
 
-    stage.addMany(hud, ...platforms, ...treasures, exit, player);
+    // DEBUG
+    exit.turnOn();
+    stage.addMany(hud, ...platforms, ...treasures, exit, player, lastGrave!);
   };
 
   const playerColors = [Color.Beige, Color.BlueBright, Color.GreenBright, Color.Orange, Color.Purple, Color.Red];
-  shuffle(playerColors);
+  const playerGraves = [Tile.Grave, Tile.Grave1, Tile.Grave2];
 
-  initLevel(playerColors[0]);
+  initLevel(getRandomElement(playerColors), getRandomElement(playerGraves));
 
   // Fade out
   stage.addChild(blank);
@@ -210,20 +224,50 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
     () => stage.removeChild(blank)
   );
 
-  const keyR = bindKey(82);
-  keyR.release = () => {
-    random.seed = random.nextInt();
-
+  const resetLevel = () => {
     hud.setRoomNo((room = 0));
     hud.setCoinsCount((coins = 0));
 
-    shuffle(playerColors);
-    initLevel(playerColors[0]);
+    initLevel(getRandomElement(playerColors), getRandomElement(playerGraves));
   };
+
+  const keyR = bindKey(82);
+  keyR.release = resetLevel;
 
   const keyD = bindKey(68);
   keyD.release = () => {
     player.die();
+
+    wait(1000).then(() => {
+      inTransition = true;
+      stage.addChild(blank);
+      tweenProp(
+        30,
+        (blank.alpha = 0),
+        1,
+        smoothstep,
+        (a) => {
+          blank.alpha = a;
+        },
+        () => {
+          if (room > 0)
+            states[room] = {
+              coins,
+              color: player.color!,
+              seed: lastRoomSeed,
+              x: player.x,
+              y: player.y,
+              graveTile: player.getGraveTile()
+            };
+
+          resetLevel();
+          inTransition = false;
+
+          stage.addChild(blank);
+          tweenProp(30, (blank.alpha = 1), 0, smoothstep, (a) => (blank.alpha = a));
+        }
+      );
+    });
   };
 
   const destroy = () => {
@@ -258,6 +302,8 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
 
   // update
   return (dt: number) => {
+    if (inTransition) return;
+
     if (portal && portal.stage) {
       time += dt;
       portal.rotation += Math.PI / 90;
@@ -346,6 +392,16 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
       player.play();
     } else {
       player.stop();
+    }
+
+    if (lastGrave && hitTestRectangle(player, lastGrave)) {
+      stage.removeChild(lastGrave);
+      lastGrave = undefined;
+
+      hud.setCoinsCount((coins += states[room].coins));
+      delete states[room];
+
+      playCoinSound();
     }
 
     // loot
@@ -439,7 +495,7 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
 
     if (exit.isOn() && hitTestRectangle(player, exit)) {
       hud.setRoomNo(++room);
-      initLevel(player.color, room);
+      initLevel(player.color, player.getGraveTile(), room);
     }
   };
 };

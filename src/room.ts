@@ -39,8 +39,6 @@ const randomInt = (min: number, max: number) => Math.floor(random.nextDouble() *
 
 // room layout generator
 export const generateRoom = ({ widthInTiles, heightInTiles, numChests = 5, roomNo }: Level): Room => {
-  console.log("Seed:", random.seed);
-
   const MAX_HOLES = 3,
     map: Array<Cell> = [],
     itemLocations: Array<Cell> = [],
@@ -85,7 +83,7 @@ export const generateRoom = ({ widthInTiles, heightInTiles, numChests = 5, roomN
     });
 
     const floorLevel = heightInTiles - 2;
-    getCellAt(2, floorLevel).item = ItemType.Player;
+    getCellAt(2, floorLevel - 1).item = ItemType.Player;
     getCellAt(4, floorLevel).item =
       getCellAt(5, floorLevel).item =
       getCellAt(6, floorLevel).item =

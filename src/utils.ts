@@ -17,5 +17,6 @@ const loadImage = (url: string): Promise<HTMLImageElement> => {
       [array[i], array[j]] = [array[j], array[i]];
     }
   },
-  padZeros = (count: number, value: number) => String(value).padStart(count, "0");
-export { loadImage, wait, shuffle, padZeros };
+  padZeros = (count: number, value: number) => String(value).padStart(count, "0"),
+  getRandomElement = <T>(arr: Array<T>): T => arr[Math.floor(Math.random() * arr.length)];
+export { loadImage, wait, shuffle, padZeros, getRandomElement };

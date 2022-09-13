@@ -21,19 +21,19 @@ const enum Tile {
   Hero1,
   Hero2,
   Key,
-  Grave,
-
   Hat,
+
+  Grave,
+  Grave1,
+  Grave2,
   Vortex,
-  Empty4,
-  Empty5,
-  Empty6,
+  Empty1,
 
   Snake,
   Bat,
   Spider,
   Ghost,
-  Empty7
+  Empty2
 }
 
 const ASSETS_TILE_SIZE = 10,
@@ -44,7 +44,7 @@ const ASSETS_TILE_SIZE = 10,
   ASSETS_SCALED_ITEM_SIZE = ASSETS_TILE_SIZE * ASSETS_ITEM_SCALE,
   GROUP_CROP = Tile.DoorClosed,
   GROUP_ADD_BORDER = Tile.Hero,
-  scales = new Array(Tile.Empty7 + 1).fill(ASSETS_ITEM_SCALE);
+  scales = new Array(Tile.Empty2 + 1).fill(ASSETS_ITEM_SCALE);
 scales[Tile.Wall0] = scales[Tile.Wall1] = scales[Tile.Wall2] = scales[Tile.Candle] = ASSETS_TILE_SCALE;
 scales[Tile.CoinHUD] = 5;
 
