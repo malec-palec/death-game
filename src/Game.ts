@@ -49,7 +49,7 @@ const createGame = (canvas: HTMLCanvasElement, assets: Array<HTMLCanvasElement>)
         }
       }
     };
-  game.changeScreen(ScreenName.Game);
+  game.changeScreen(ScreenName.Start);
   return game;
 };
 

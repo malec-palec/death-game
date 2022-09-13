@@ -145,7 +145,6 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
           case ItemType.Player:
             image = assets[playerTile];
 
-            // TODO: re-do
             heroAnim = createMovieClip(
               [image, assets[playerTile + 1], assets[playerTile], assets[playerTile + 2]],
               playerColor,
@@ -252,8 +251,6 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
       shuffle(drops);
     }
 
-    // DEBUG
-    exit.turnOn();
     stage.addMany(
       hud,
       ...platforms,
@@ -328,15 +325,14 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
   const keyR = bindKey(82);
   keyR.release = resetLevel;
 
-  const keyD = bindKey(68);
-  keyD.release = killPlayer;
-
   const destroy = () => {
     stage.removeAll();
 
     platforms = [];
     treasures = [];
     drops = [];
+    groundEnemies = [];
+    flyingEnemies = [];
   };
 
   const gameOver = () => {
@@ -483,7 +479,7 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
 
     groundEnemies.forEach((enemy) => {
       enemy.scaleX = Math.sign(enemy.x - player.x);
-      enemy.scaleY = 0.98 + Math.sin(time / 100) * 0.04;
+      enemy.scaleY = 0.98 + Math.sin(time / 100) * 0.02;
 
       if (hitTestRectangle(player, enemy)) {
         killPlayer();
@@ -507,7 +503,7 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
         enemy.scaleX *= -1;
       }
 
-      // if (hitTestRectangle(player, enemy)) killPlayer();
+      if (hitTestRectangle(player, enemy)) killPlayer();
     });
 
     // loot

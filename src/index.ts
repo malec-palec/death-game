@@ -3,10 +3,12 @@ import ATLAS_URL from "./assets/atlas.png";
 import { initRenderer } from "./core/renderer";
 import { createGame } from "./game";
 import { loadRecords } from "./screens/score-screen";
+import { playMainTheme } from "./sounds";
 import { loadImage } from "./utils";
 
 const main = async () => {
   loadRecords();
+  playMainTheme();
 
   const atlas = await loadImage(ATLAS_URL),
     assets = createAssets(atlas),
