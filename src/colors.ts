@@ -14,5 +14,6 @@ export const enum Color {
   Purple = "#e05ad1",
   Red = "#ff5036",
   BlueBright = "#639bff",
-  GreenBright = "#35b23a"
+  GreenBright = "#35b23a",
+  Dark = "#4e374e"
 }

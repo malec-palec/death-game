@@ -4,8 +4,8 @@ export type Cell = {
   x: number;
   y: number;
   terrain: TerrainType;
-  item?: ItemType;
   isEmpty(): boolean;
+  item?: ItemType;
 };
 
 export const enum TerrainType {
@@ -19,7 +19,9 @@ export const enum ItemType {
   Player,
   Treasure,
   Exit,
-  Portal
+  Portal,
+  Snake,
+  Bat
 }
 
 type Level = {
@@ -38,22 +40,38 @@ const randomInt = (min: number, max: number) => Math.floor(random.nextDouble() *
   cellIsGround = () => randomInt(0, 3) === 0;
 
 // room layout generator
-export const generateRoom = ({ widthInTiles, heightInTiles, numChests = 5, roomNo }: Level): Room => {
+export const generateRoom = ({ widthInTiles, heightInTiles, roomNo, numChests = 5 }: Level): Room => {
   const MAX_HOLES = 3,
     map: Array<Cell> = [],
     itemLocations: Array<Cell> = [],
+    groundSpawnLocations: Array<Cell> = [],
+    airSpawnLocations: Array<Cell> = [],
     numCells = heightInTiles * widthInTiles,
     getIndex = (x: number, y: number) => x + y * widthInTiles,
     getCellAt = (px: number, py: number) => map[getIndex(px, py)],
     getCellNear = (c: Cell, dx: number, dy: number): Cell | undefined => map[getIndex(c.x + dx, c.y + dy)],
-    placeItem = (type: ItemType): Cell => {
-      const randIndex = randomInt(0, itemLocations.length - 1),
-        loc = itemLocations[randIndex],
+    placeItem = (type: ItemType, locations: Array<Cell>): Cell => {
+      const randIndex = randomInt(0, locations.length - 1),
+        loc = locations[randIndex],
         leftNeighbor = getCellNear(loc, -1, 0)!,
         rightNeighbor = getCellNear(loc, 1, 0)!;
-      itemLocations.splice(randIndex, 1);
+      locations.splice(randIndex, 1);
       if (leftNeighbor.item || rightNeighbor.item) {
-        return placeItem(type);
+        return placeItem(type, locations);
+      }
+      loc.item = type;
+      return loc;
+    },
+    hasEnemy = (cell: Cell) => cell.item && (cell.item === ItemType.Snake || cell.item === ItemType.Bat),
+    placeEnemy = (type: ItemType, locations: Array<Cell>): Cell | undefined => {
+      if (locations.length === 0) return undefined;
+      const randIndex = randomInt(0, locations.length - 1),
+        loc = locations[randIndex];
+      const leftNeighbor = getCellNear(loc, -1, 0)!,
+        rightNeighbor = getCellNear(loc, 1, 0)!;
+      locations.splice(randIndex, 1);
+      if (hasEnemy(leftNeighbor) || hasEnemy(rightNeighbor)) {
+        return placeEnemy(type, locations);
       }
       loc.item = type;
       return loc;
@@ -83,7 +101,7 @@ export const generateRoom = ({ widthInTiles, heightInTiles, numChests = 5, roomN
     });
 
     const floorLevel = heightInTiles - 2;
-    getCellAt(2, floorLevel - 1).item = ItemType.Player;
+    getCellAt(2, floorLevel).item = ItemType.Player;
     getCellAt(4, floorLevel).item =
       getCellAt(5, floorLevel).item =
       getCellAt(6, floorLevel).item =
@@ -173,12 +191,59 @@ export const generateRoom = ({ widthInTiles, heightInTiles, numChests = 5, roomN
   });
 
   // addItems
-  placeItem(ItemType.Exit);
+  const busyCells: Array<Cell> = [];
+  busyCells.push(placeItem(ItemType.Exit, itemLocations));
   for (i = 0; i < numChests; i++) {
-    placeItem(ItemType.Treasure);
+    busyCells.push(placeItem(ItemType.Treasure, itemLocations));
   }
-  placeItem(ItemType.Player);
-  placeItem(ItemType.Portal);
+  busyCells.push(placeItem(ItemType.Player, itemLocations));
+  busyCells.push(placeItem(ItemType.Portal, itemLocations));
+
+  map.forEach((cell: Cell) => {
+    if (cell.y > 1 && (cell.terrain === TerrainType.Grass || cell.terrain === TerrainType.Border)) {
+      const cellAbove = getCellNear(cell, 0, -1)!,
+        leftNeighbor = getCellNear(cellAbove, -1, 0)!,
+        rightNeighbor = getCellNear(cellAbove, 1, 0)!,
+        leftDownNeighbor = getCellNear(cellAbove, -1, 1)!,
+        rightDownNeighbor = getCellNear(cellAbove, 1, 1)!;
+      if (
+        busyCells.indexOf(cellAbove) < 0 &&
+        cellAbove.isEmpty() &&
+        ((leftNeighbor.isEmpty() && !leftDownNeighbor.isEmpty()) ||
+          (rightNeighbor.isEmpty() && !rightDownNeighbor.isEmpty()))
+      )
+        groundSpawnLocations.push(cellAbove);
+    }
+  });
+
+  const levelThreshold = 8,
+    maxGroundEnemies = Math.floor(roomNo / levelThreshold) + 1,
+    maxFlyingEnemies = Math.floor(roomNo / levelThreshold),
+    groundEnemiesLimit = Math.round(random.nextDouble() * maxGroundEnemies),
+    flyingEnemiesLimit = Math.round(random.nextDouble() * maxFlyingEnemies);
+
+  let numEnemies = 0;
+  while (groundSpawnLocations.length > 0 && numEnemies < groundEnemiesLimit) {
+    placeEnemy(ItemType.Snake, groundSpawnLocations);
+    numEnemies++;
+  }
+
+  map.forEach((cell: Cell) => {
+    if (cell.isEmpty()) {
+      const leftNeighbor = getCellNear(cell, -1, 0)!,
+        rightNeighbor = getCellNear(cell, 1, 0)!,
+        cellAbove = getCellNear(cell, 0, -1)!,
+        cellBelow = getCellNear(cell, 0, 1)!;
+      if (cellAbove?.isEmpty() && cellBelow?.isEmpty() && leftNeighbor?.isEmpty() && rightNeighbor?.isEmpty())
+        airSpawnLocations.push(cell);
+    }
+  });
+
+  numEnemies = 0;
+  while (airSpawnLocations.length > 0 && numEnemies < flyingEnemiesLimit) {
+    placeEnemy(ItemType.Bat, airSpawnLocations);
+    numEnemies++;
+  }
 
   return {
     map,

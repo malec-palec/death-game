@@ -10,17 +10,27 @@ export interface Player extends MovieClip, GameObjectComponent {
   isOnGround: boolean;
   die(): void;
   isAlive(): boolean;
+  getTile(): Tile;
   getGraveTile(): Tile;
 }
 
 export type PlayerProps = Pick<Player, "frictionX" | "frictionY" | "gravity" | "jumpForce" | "isOnGround">;
 
-export const createPlayer = (mc: MovieClip, grave: HTMLCanvasElement, graveTile: Tile, props: PlayerProps): Player => {
+export const createPlayer = (
+  mc: MovieClip,
+  tile: Tile,
+  grave: HTMLCanvasElement,
+  graveTile: Tile,
+  props: PlayerProps
+): Player => {
   const player = addComponents(mc, getGameObjectComponent(), props);
   const superUpdate = player.update,
     superStop = player.stop;
   let isDead = false;
   return Object.assign(player, {
+    getTile() {
+      return tile;
+    },
     getGraveTile() {
       return graveTile;
     },
@@ -33,6 +43,8 @@ export const createPlayer = (mc: MovieClip, grave: HTMLCanvasElement, graveTile:
 
       player.vx *= -1;
       player.vy *= -1;
+
+      player.accX = 0;
     },
     update(dt: number) {
       if (!isDead) superUpdate(dt);
