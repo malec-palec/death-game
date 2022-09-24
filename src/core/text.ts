@@ -1,4 +1,4 @@
-import { createDisplayObject, DisplayObject } from "./display";
+import { createDisplayObject, DisplayObject, DisplayObjectProps } from "./display";
 import { initFont } from "./font";
 import { font } from "./font/pixel";
 
@@ -11,32 +11,32 @@ type WriteLineFunc = (
   color: string
 ) => number;
 
-export interface Text extends DisplayObject {
+interface Text extends DisplayObject {
   value: string;
   size: number;
   color: string;
 }
 
-export type TextProps = Pick<DisplayObject, "width"> &
-  Partial<Pick<DisplayObject, "x" | "y" | "pivotX" | "pivotY" | "rotation" | "alpha" | "scaleX" | "scaleY">>;
+type TextProps = Partial<{
+  color: string;
+}> &
+  DisplayObjectProps;
 
-const writeLine: WriteLineFunc = initFont(font),
-  createText = (value: string, size: number, props: TextProps, color = "#fff"): Text => {
-    const text = createDisplayObject(
-      {
-        height: size,
-        ...props,
-        render(context: CanvasRenderingContext2D) {
-          text.width = writeLine(context, text.value, 0, 0, text.size, text.color);
-        }
-      },
-      {
-        value,
-        size,
-        color
-      }
-    );
-    return text;
-  };
+const writeLine: WriteLineFunc = initFont(font);
 
-export { createText, writeLine };
+const createText = (value: string, size: number, props?: TextProps): Text => {
+  const text: Text = Object.assign(
+    createDisplayObject(size, size, (ctx) => {
+      text.width = writeLine(ctx, text.value, 0, 0, text.size, text.color);
+    }),
+    {
+      color: "#FFF",
+      value,
+      size
+    },
+    props
+  );
+  return text;
+};
+
+export { Text, TextProps, writeLine, createText };

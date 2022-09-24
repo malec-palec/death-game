@@ -18,8 +18,7 @@ const zipOut = () =>
     .pipe(gulp.dest("./out"));
 
 const shrink = (cb) => {
-  // -i 5000
-  exec(`cd tools && advzip ../out/${zipFile} -z -4`, function (err, stdout, stderr) {
+  exec(`cd tools && advzip ../out/${zipFile} -z -4 -i 1000`, function (err, stdout, stderr) {
     console.log(stdout);
     cb(err);
   });

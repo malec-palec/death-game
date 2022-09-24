@@ -1,8 +1,12 @@
-import { Tile } from "./assets";
-import { addComponents, GameObjectComponent, getGameObjectComponent } from "./components";
-import { MovieClip } from "./core/movie-clip";
+import { assets, Tile } from "./assets";
+import { Color } from "./colors";
+import { canvasPool, colorizeImage } from "./core/canvas-utils";
+import { GameObjectComponent, GameObjectProps, getGameObjectComponent } from "./game-object";
+import { createMovieClip, MovieClip, MovieClipProps } from "./movie-clip";
 
-export interface Player extends MovieClip, GameObjectComponent {
+interface Player extends GameObjectComponent, MovieClip {
+  readonly tile: Tile;
+  readonly graveTile: Tile;
   frictionX: number;
   frictionY: number;
   gravity: number;
@@ -10,47 +14,63 @@ export interface Player extends MovieClip, GameObjectComponent {
   isOnGround: boolean;
   die(): void;
   isAlive(): boolean;
-  getTile(): Tile;
-  getGraveTile(): Tile;
 }
 
-export type PlayerProps = Pick<Player, "frictionX" | "frictionY" | "gravity" | "jumpForce" | "isOnGround">;
+type PlayerProps = {
+  frictionX: number;
+  frictionY: number;
+  gravity: number;
+  jumpForce: number;
+  isOnGround: boolean;
+} & GameObjectProps &
+  MovieClipProps;
 
-export const createPlayer = (
-  mc: MovieClip,
-  tile: Tile,
-  grave: HTMLCanvasElement,
-  graveTile: Tile,
-  props: PlayerProps
-): Player => {
-  const player = addComponents(mc, getGameObjectComponent(), props);
-  const superUpdate = player.update,
-    superStop = player.stop;
+const createPlayer = (tiles: Array<Tile>, graveTile: Tile, color: Color, props: PlayerProps): Player => {
+  let grave: HTMLCanvasElement | undefined;
   let isDead = false;
-  return Object.assign(player, {
-    getTile() {
-      return tile;
-    },
-    getGraveTile() {
-      return graveTile;
-    },
-    isAlive() {
-      return !isDead;
-    },
-    die() {
-      isDead = true;
-      player.setImage(grave);
 
-      player.vx *= -1;
-      player.vy *= -1;
+  const superPlayer = createMovieClip(tiles, color, true);
+  const { update: superUpdate, stop: superStop, destroy: superDestroy } = superPlayer;
 
-      player.accX = 0;
+  // const outlineSize = ASSETS_ITEM_SCALE;
+  // const outlineColor = Color.BrownDark;
+  // props.borderSize = props.borderSize ? props.borderSize + outlineSize : outlineSize;
+
+  const player: Player = Object.assign(
+    superPlayer,
+    getGameObjectComponent(),
+    {
+      tile: tiles[0],
+      graveTile,
+      isAlive() {
+        return !isDead;
+      },
+      die() {
+        isDead = true;
+
+        grave = colorizeImage(assets[graveTile], color);
+        // grave = addOutline(grave, outlineSize, outlineColor);
+        player.setImage(grave);
+
+        player.vx *= -1;
+        player.vy *= -1;
+
+        player.accX = 0;
+      },
+      update(dt: number) {
+        if (!isDead) superUpdate(dt);
+      },
+      stop(frame?: number) {
+        if (!isDead) superStop(frame);
+      },
+      destroy() {
+        if (grave) canvasPool.free(grave);
+        superDestroy();
+      }
     },
-    update(dt: number) {
-      if (!isDead) superUpdate(dt);
-    },
-    stop(frame?: number) {
-      if (!isDead) superStop(frame);
-    }
-  });
+    props
+  );
+  return player;
 };
+
+export { Player, PlayerProps, createPlayer };

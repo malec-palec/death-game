@@ -36,46 +36,7 @@ function debugBuild() {
   };
 }
 
-const propsToMangle = [
-  "isRightKeyDown",
-  "isLeftKeyDown",
-  "isDownKeyDown",
-  "getHalfHeight",
-  "itemLocations",
-  "heightInTiles",
-  "getHalfWidth",
-  "widthInTiles",
-  "isUpKeyDown",
-  "isSpaceDown",
-  "removeChild",
-  "getGlobalX",
-  "getGlobalY",
-  "getCenterX",
-  "getCenterY",
-  "tileheight",
-  "isOnGround",
-  "platforms",
-  "tilewidth",
-  "frictionX",
-  "frictionY",
-  "jumpForce",
-  "rotation",
-  "children",
-  "addChild",
-  "terrain",
-  "gravity",
-  "pivotX",
-  "pivotY",
-  "scaleX",
-  "scaleY",
-  "update",
-  "render",
-  "stage",
-  "color",
-  "item",
-  "accX",
-  "accY"
-];
+const propsToMangle = [];
 
 function releaseBuild() {
   return {

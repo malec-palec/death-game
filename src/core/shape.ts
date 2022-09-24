@@ -1,26 +1,26 @@
-import { createDisplayObject, DisplayObject } from "./display";
+import { createDisplayObject, DisplayObject, DisplayObjectProps } from "./display";
 
-export interface Shape extends DisplayObject {
+interface Shape extends DisplayObject {
   color: string;
 }
 
-export type ShapeProps = Pick<DisplayObject, "width" | "height"> &
-  Partial<Pick<DisplayObject, "x" | "y" | "pivotX" | "pivotY" | "rotation" | "alpha" | "scaleX" | "scaleY">>;
+type ShapeProps = Partial<{
+  color: string;
+}> &
+  DisplayObjectProps;
 
-const createRectShape = (props: ShapeProps, color?: string): Shape => {
-  const shape = createDisplayObject(
+const createRectShape = (width: number, height: number, props?: ShapeProps): Shape => {
+  const shape: Shape = Object.assign(
+    createDisplayObject(width, height, (ctx) => {
+      ctx.fillStyle = shape.color;
+      ctx.fillRect(0, 0, shape.width, shape.height);
+    }),
     {
-      ...props,
-      render(context: CanvasRenderingContext2D) {
-        context.fillStyle = shape.color;
-        context.fillRect(0, 0, shape.width, shape.height);
-      }
+      color: "0"
     },
-    {
-      color: color ?? "0"
-    }
+    props
   );
   return shape;
 };
 
-export { createRectShape };
+export { Shape, ShapeProps, createRectShape };

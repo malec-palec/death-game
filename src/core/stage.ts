@@ -1,46 +1,37 @@
-import { createDisplayObject, DisplayObject } from "./display";
+import { createDisplayObject, DisplayObject, DisplayObjectProps } from "./display";
 
-export interface Stage extends DisplayObject {
-  children: DisplayObject[];
+interface Stage extends DisplayObject {
+  children: Array<DisplayObject>;
+  hasChildren(): boolean;
   addChild(obj: DisplayObject): void;
   removeChild(obj: DisplayObject): void;
-  addMany(...all: DisplayObject[]): void;
+  addMany(...all: Array<DisplayObject>): void;
   removeAll(): void;
-  hasChildren(): boolean;
 }
 
-const createStage = (width: number, height: number, x = 0, y = 0): Stage => {
-  const stage = createDisplayObject(
+type StageProps = DisplayObjectProps;
+
+const createStage = (width: number, height: number, props?: StageProps): Stage => {
+  const stage: Stage = Object.assign(
+    createDisplayObject(width, height, (ctx) => {
+      stage.children.forEach((obj) => {
+        ctx.save();
+
+        ctx.translate(
+          stage.x + obj.x - obj.borderSize + (obj.width + obj.borderSize * 2) * obj.pivotX,
+          stage.y + obj.y - obj.borderSize + (obj.height + obj.borderSize * 2) * obj.pivotY
+        );
+        ctx.rotate(obj.rotation);
+        ctx.globalAlpha = obj.alpha * stage.alpha;
+        ctx.scale(obj.scaleX, obj.scaleY);
+
+        obj.render(ctx);
+
+        ctx.restore();
+      });
+    }),
     {
-      x,
-      y,
-      width,
-      height,
-      update(dt: number) {
-        stage.children.forEach((obj) => {
-          obj.update(dt);
-        });
-      },
-      render(context: CanvasRenderingContext2D) {
-        stage.children.forEach((obj) => {
-          context.save();
-
-          context.translate(
-            stage.x + obj.x - obj.border + (obj.width + obj.border * 2) * obj.pivotX,
-            stage.y + obj.y - obj.border + (obj.height + obj.border * 2) * obj.pivotY
-          );
-          context.rotate(obj.rotation);
-          context.globalAlpha = obj.alpha * stage.alpha;
-          context.scale(obj.scaleX, obj.scaleY);
-
-          obj.render(context);
-
-          context.restore();
-        });
-      }
-    },
-    {
-      children: new Array<DisplayObject>(),
+      children: [],
       addChild(obj: DisplayObject) {
         obj.stage = stage;
         stage.children.push(obj);
@@ -63,10 +54,16 @@ const createStage = (width: number, height: number, x = 0, y = 0): Stage => {
       },
       hasChildren() {
         return stage.children.length > 0;
+      },
+      update(dt: number) {
+        stage.children.forEach((obj) => {
+          obj.update(dt);
+        });
       }
-    }
+    },
+    props
   );
   return stage;
 };
 
-export { createStage };
+export { Stage, StageProps, createStage };

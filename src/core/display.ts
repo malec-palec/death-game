@@ -1,13 +1,12 @@
-import { MakeOptional } from "../types";
 import { Stage } from "./stage";
 
-export interface DisplayObject {
+interface DisplayObject {
   stage?: Stage;
   x: number;
   y: number;
   width: number;
   height: number;
-  border: number;
+  borderSize: number;
   pivotX: number;
   pivotY: number;
   rotation: number;
@@ -16,6 +15,7 @@ export interface DisplayObject {
   scaleY: number;
   update(dt: number): void;
   render(context: CanvasRenderingContext2D): void;
+  destroy(): void;
   getGlobalX(): number;
   getGlobalY(): number;
   getHalfWidth(): number;
@@ -24,35 +24,30 @@ export interface DisplayObject {
   getCenterY(): number;
 }
 
-// TODO: replace with make some required, rest - optional
-export type DisplayObjectProps = MakeOptional<
-  DisplayObject,
-  | "x"
-  | "y"
-  | "border"
-  | "pivotX"
-  | "pivotY"
-  | "rotation"
-  | "alpha"
-  | "scaleX"
-  | "scaleY"
-  | "update"
-  | "getGlobalX"
-  | "getGlobalY"
-  | "getHalfWidth"
-  | "getHalfHeight"
-  | "getCenterX"
-  | "getCenterY"
->;
+type DisplayObjectProps = Partial<{
+  x: number;
+  y: number;
+  borderSize: number;
+  pivotX: number;
+  pivotY: number;
+  rotation: number;
+  alpha: number;
+  scaleX: number;
+  scaleY: number;
+}>;
 
-const createDisplayObject = <T extends { [prop: string]: any }>(
-  props: DisplayObjectProps,
-  add?: T
-): DisplayObject & T => {
+const createDisplayObject = (
+  width: number,
+  height: number,
+  render: (context: CanvasRenderingContext2D) => void,
+  props?: DisplayObjectProps
+): DisplayObject => {
   const obj: DisplayObject = {
     x: 0,
     y: 0,
-    border: 0,
+    width,
+    height,
+    borderSize: 0,
     pivotX: 0,
     pivotY: 0,
     rotation: 0,
@@ -62,19 +57,15 @@ const createDisplayObject = <T extends { [prop: string]: any }>(
     update(dt: number) {
       // do nothing here
     },
+    render,
+    destroy() {
+      // do nothing here
+    },
     getGlobalX(): number {
-      if (obj.stage) {
-        return obj.x + obj.stage.getGlobalX();
-      } else {
-        return obj.x;
-      }
+      return obj.stage ? obj.x + obj.stage.getGlobalX() : obj.x;
     },
     getGlobalY(): number {
-      if (obj.stage) {
-        return obj.y + obj.stage.getGlobalY();
-      } else {
-        return obj.y;
-      }
+      return obj.stage ? obj.y + obj.stage.getGlobalY() : obj.y;
     },
     getHalfWidth(): number {
       return obj.width / 2;
@@ -90,6 +81,7 @@ const createDisplayObject = <T extends { [prop: string]: any }>(
     },
     ...props
   };
-  return Object.assign(obj, add);
+  return obj;
 };
-export { createDisplayObject };
+
+export { DisplayObject, DisplayObjectProps, createDisplayObject };

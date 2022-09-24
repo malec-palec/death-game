@@ -1,26 +1,22 @@
+import { Tile } from "./assets";
 import { Color } from "./colors";
-import { createSpite, Sprite, SpriteProps } from "./core/sprite";
+import { createMovieClip, MovieClip, MovieClipProps } from "./movie-clip";
 
 const enum ToggleState {
   Off,
   On
 }
 
-export interface Toggle extends Sprite {
+interface Toggle extends MovieClip {
   isOff(): boolean;
   isOn(): boolean;
   turnOn(): void;
+  // turnOff(): void;
 }
 
-export const createToggle = (
-  offImage: HTMLCanvasElement,
-  onImage: HTMLCanvasElement,
-  color: Color,
-  props?: SpriteProps,
-  onAlpha = 1
-): Toggle => {
+const createToggle = (offTile: Tile, onTile: Tile, color: Color, props?: MovieClipProps, onAlpha = 1): Toggle => {
   let state = ToggleState.Off;
-  const toggle = Object.assign(createSpite(offImage, props, color), {
+  const toggle: Toggle = Object.assign(createMovieClip([offTile, onTile], color, false, props), {
     isOff() {
       return state === ToggleState.Off;
     },
@@ -28,10 +24,17 @@ export const createToggle = (
       return state === ToggleState.On;
     },
     turnOn() {
-      state = ToggleState.On;
-      toggle.setImage(onImage);
+      toggle.setImage(toggle.images[(state = ToggleState.On)]);
       toggle.alpha = onAlpha;
     }
+    /*
+    turnOff() {
+      toggle.setImage(toggle.images[(state = ToggleState.Off)]);
+      toggle.alpha = 1;
+    }
+    */
   });
   return toggle;
 };
+
+export { Toggle, createToggle };

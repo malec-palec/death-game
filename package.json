@@ -43,6 +43,7 @@
     "handlebars": "^4.7.7",
     "html-minifier": "^4.0.0",
     "prettier": "^2.7.1",
+    "roadroller": "^2.1.0",
     "rollup": "^2.78.1",
     "rollup-plugin-copy": "^3.4.0",
     "rollup-plugin-delete": "^2.0.0",

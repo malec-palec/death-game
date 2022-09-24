@@ -1,4 +1,4 @@
-export const enum Color {
+const enum Color {
   Blood = "#ae3737",
   Brown = "#a26134",
   BrownDark = "#201208",
@@ -17,3 +17,5 @@ export const enum Color {
   GreenBright = "#35b23a",
   Dark = "#4e374e"
 }
+
+export { Color };

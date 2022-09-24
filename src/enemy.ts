@@ -1,8 +1,14 @@
-import { addComponents, GameObjectComponent, getGameObjectComponent } from "./components";
+import { Tile } from "./assets";
+import { createColoredSprite } from "./colored-sprite";
+import { Color } from "./colors";
 import { Sprite, SpriteProps } from "./core/sprite";
+import { GameObjectComponent, GameObjectProps, getGameObjectComponent } from "./game-object";
 
-export interface Enemy extends Sprite, GameObjectComponent {}
+interface Enemy extends GameObjectComponent, Sprite {}
 
-export const createEnemy = (sprite: Sprite, props?: SpriteProps): Enemy => {
-  return addComponents(sprite, getGameObjectComponent(), props);
-};
+type EnemyProps = GameObjectProps & SpriteProps;
+
+const createEnemy = (tile: Tile, color: Color, props?: EnemyProps): Enemy =>
+  Object.assign(createColoredSprite(tile, color), getGameObjectComponent(), props);
+
+export { Enemy, EnemyProps, createEnemy };

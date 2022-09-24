@@ -1,50 +1,54 @@
-const KEY_LEFT = 37,
-  KEY_RIGHT = 39,
-  KEY_UP = 38,
-  KEY_DOWN = 40,
-  SPACE = 32,
-  ENTER = 13;
+import { unlockAudio } from "./sound/audio";
 
-let isLeftKeyDown = false,
-  isRightKeyDown = false,
-  isUpKeyDown = false,
-  isDownKeyDown = false,
-  isSpaceDown = false;
+const KEY_LEFT = 37;
+const KEY_RIGHT = 39;
+const KEY_UP = 38;
+const KEY_DOWN = 40;
+const SPACE = 32;
+const ENTER = 13;
+
+let isLeftKeyDown = false;
+let isRightKeyDown = false;
+let isUpKeyDown = false;
+let isDownKeyDown = false;
+let isSpaceDown = false;
 
 onkeydown = (event: KeyboardEvent) => {
-  const code = event.keyCode;
-  if (code === KEY_LEFT) {
+  unlockAudio();
+
+  const { keyCode } = event;
+  if (keyCode === KEY_LEFT) {
     isLeftKeyDown = true;
   }
-  if (code === KEY_RIGHT) {
+  if (keyCode === KEY_RIGHT) {
     isRightKeyDown = true;
   }
-  if (code === KEY_UP) {
+  if (keyCode === KEY_UP) {
     isUpKeyDown = true;
   }
-  if (code === KEY_DOWN) {
+  if (keyCode === KEY_DOWN) {
     isDownKeyDown = true;
   }
-  if (code === SPACE) {
+  if (keyCode === SPACE) {
     isSpaceDown = true;
   }
 };
 
 onkeyup = (event: KeyboardEvent) => {
-  const code = event.keyCode;
-  if (code === KEY_LEFT) {
+  const { keyCode } = event;
+  if (keyCode === KEY_LEFT) {
     isLeftKeyDown = false;
   }
-  if (code === KEY_RIGHT) {
+  if (keyCode === KEY_RIGHT) {
     isRightKeyDown = false;
   }
-  if (code === KEY_UP) {
+  if (keyCode === KEY_UP) {
     isUpKeyDown = false;
   }
-  if (code === KEY_DOWN) {
+  if (keyCode === KEY_DOWN) {
     isDownKeyDown = false;
   }
-  if (code === SPACE) {
+  if (keyCode === SPACE) {
     isSpaceDown = false;
   }
 };
@@ -59,7 +63,7 @@ type Key = {
   upHandler: (event: KeyboardEvent) => void;
 };
 
-export const bindKey = (keyCode: number): Key => {
+const bindKey = (keyCode: number): Key => {
   const key: Key = {
     code: keyCode,
     isDown: false,
@@ -81,8 +85,8 @@ export const bindKey = (keyCode: number): Key => {
       // event.preventDefault();
     }
   };
-  addEventListener("keydown", key.downHandler.bind(key), false);
-  addEventListener("keyup", key.upHandler.bind(key), false);
+  addEventListener("keydown", key.downHandler.bind(key));
+  addEventListener("keyup", key.upHandler.bind(key));
   return key;
 };
 
@@ -97,5 +101,6 @@ export {
   KEY_UP,
   KEY_DOWN,
   SPACE,
-  ENTER
+  ENTER,
+  bindKey
 };

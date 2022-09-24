@@ -1,85 +1,49 @@
-import { createDisplayObject, DisplayObject } from "./display";
+import { createDisplayObject, DisplayObject, DisplayObjectProps } from "./display";
 
-export interface Sprite extends DisplayObject {
-  image: CanvasImageSource;
+interface Sprite extends DisplayObject {
+  readonly image: CanvasImageSource;
   setImage(image: CanvasImageSource): void;
-  color?: string;
 }
 
-export type SpriteProps = Partial<
-  Pick<
-    DisplayObject,
-    | "x"
-    | "y"
-    | "width"
-    | "height"
-    | "border"
-    | "pivotX"
-    | "pivotY"
-    | "rotation"
-    | "alpha"
-    | "scaleX"
-    | "scaleY"
-    | "update"
-  >
->;
+type SpriteProps = DisplayObjectProps;
 
-export const colorizeImage = (image: CanvasImageSource, color: string): HTMLCanvasElement => {
-  const canvas = document.createElement("canvas");
-  canvas.width = <number>image.width;
-  canvas.height = <number>image.height;
-  const context = canvas.getContext("2d")!;
-  context.drawImage(image, 0, 0);
-  context.fillStyle = color;
-  context.globalCompositeOperation = "source-in";
-  context.fillRect(0, 0, canvas.width, canvas.height);
-  return canvas;
-};
+const createSprite = (image: CanvasImageSource, props?: SpriteProps): Sprite => {
+  let imageWidth = <number>image.width;
+  let imageHeight = <number>image.height;
 
-const createSpite = (image: CanvasImageSource, props?: SpriteProps, color?: string): Sprite => {
-  let imageWidth = <number>image.width,
-    imageHeight = <number>image.height;
-  if (color) image = colorizeImage(image, color);
-  const sprite = createDisplayObject(
-    {
-      width: imageWidth,
-      height: imageHeight,
-      ...props,
-      render(context: CanvasRenderingContext2D) {
-        context.drawImage(
-          sprite.image,
-          0,
-          0,
-          imageWidth,
-          imageHeight,
-          -imageWidth * sprite.pivotX,
-          -imageHeight * sprite.pivotY,
-          imageWidth,
-          imageHeight
-        );
-        // if (sprite.color) {
-        //   context.fillStyle = sprite.color;
-        //   context.globalCompositeOperation = "multiply";
-        //   context.fillRect(-imageWidth * sprite.pivotX, -imageHeight * sprite.pivotY, imageWidth, imageHeight);
-        // }
-      }
-    },
+  const sprite: Sprite = Object.assign(
+    createDisplayObject(imageWidth, imageHeight, (ctx) => {
+      ctx.drawImage(
+        sprite.image,
+        0,
+        0,
+        imageWidth,
+        imageHeight,
+        -imageWidth * sprite.pivotX,
+        -imageHeight * sprite.pivotY,
+        imageWidth,
+        imageHeight
+      );
+    }),
     {
       image,
-      color,
-      setImage(image: CanvasImageSource, newColor?: string) {
-        if (newColor) sprite.color = newColor;
+      setImage(image: CanvasImageSource) {
         imageWidth = <number>image.width;
         imageHeight = <number>image.height;
-        sprite.image = sprite.color ? colorizeImage(image, sprite.color) : image;
-        sprite.width = imageWidth - sprite.border * 2;
-        sprite.height = imageHeight - sprite.border * 2;
+
+        this.image = image;
+
+        sprite.width = imageWidth - sprite.borderSize * 2;
+        sprite.height = imageHeight - sprite.borderSize * 2;
       }
-    }
+    },
+    props
   );
-  sprite.width -= sprite.border * 2;
-  sprite.height -= sprite.border * 2;
+
+  sprite.width -= sprite.borderSize * 2;
+  sprite.height -= sprite.borderSize * 2;
+
   return sprite;
 };
 
-export { createSpite };
+export { Sprite, SpriteProps, createSprite };

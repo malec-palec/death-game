@@ -1,20 +1,21 @@
 import { ASSETS_BORDER_SIZE, ASSETS_SCALED_TILE_SIZE, Tile } from "../assets";
+import { createColoredSprite } from "../colored-sprite";
 import { Color } from "../colors";
 import { CollisionSide, hitTestRectangle, rectangleCollision } from "../core/collision";
 import { DisplayObject } from "../core/display";
 import { bindKey, isLeftKeyDown, isRightKeyDown, isSpaceDown } from "../core/keyboard";
-import { createMovieClip, MovieClip } from "../core/movie-clip";
 import { random } from "../core/random";
 import { createRectShape } from "../core/shape";
-import { createSpite, Sprite } from "../core/sprite";
+import { Sprite } from "../core/sprite";
 import { createText } from "../core/text";
 import { easeOutBack, sine, smoothstep, tweenProp } from "../core/tween";
 import { createEnemy, Enemy } from "../enemy";
 import { Game } from "../game";
 import { createHUD } from "../hud";
+import { createMovieClip } from "../movie-clip";
 import { createPlayer, Player } from "../player";
 import { Cell, generateRoom, ItemType, TerrainType } from "../room";
-import { playCoinSound, playJumpSound } from "../sounds";
+import { playSound, Sound } from "../sounds";
 import { createToggle, Toggle } from "../toggle";
 import { getRandomElement, shuffle, wait } from "../utils";
 import { ScreenName, UpdateScreen } from "./screen";
@@ -29,43 +30,62 @@ type RoomState = {
   coins: number;
   x: number;
   y: number;
-  color: string;
+  color: Color;
   graveTile: Tile;
   seed: number;
 };
 
-const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateScreen => {
-  const { stage } = game,
-    tileSize = ASSETS_SCALED_TILE_SIZE,
-    borderSize = ASSETS_BORDER_SIZE,
-    hud = createHUD(stage.width, assets),
-    blank = createRectShape({ width: stage.width, height: stage.height }, Color.BrownDark),
-    winLabel = createText("YOU WIN!", tileSize * 2, { width: stage.width }, Color.Beige),
-    states: Array<RoomState> = [];
+const destroyMany = (list?: Array<DisplayObject>) => {
+  while (list && list.length > 0) {
+    list.pop()!.destroy();
+  }
+};
 
-  let platforms: Array<DisplayObject>,
-    treasures: Array<Toggle>,
-    groundEnemies: Array<Sprite>,
-    flyingEnemies: Array<Enemy>,
-    drops: Array<DropType>,
-    exit: Toggle,
-    player: Player,
-    portal: Sprite | undefined,
-    lastGrave: Sprite | undefined,
-    ghost: Enemy | undefined,
-    room = 0,
-    coins = 0,
-    lastRoomSeed = -1,
-    time: number,
-    inTransition = false;
+const createGameScreen = (game: Game): UpdateScreen => {
+  let platforms: Array<Sprite>;
+  let treasures: Array<Toggle>;
+  let groundEnemies: Array<Sprite>;
+  let flyingEnemies: Array<Enemy>;
+  let drops: Array<DropType>;
+  let exit: Toggle;
+  let player: Player;
+  let portal: Sprite | undefined;
+  let lastGrave: Sprite | undefined;
+  let ghost: Enemy | undefined;
+  let time: number;
+  let room = 0;
+  let coins = 0;
+  let lastRoomSeed = -1;
+  let inTransition = false;
+
+  const { stage } = game;
+  const tileSize = ASSETS_SCALED_TILE_SIZE;
+  const borderSize = ASSETS_BORDER_SIZE;
+  const hud = createHUD(stage.width);
+  const blank = createRectShape(stage.width, stage.height, { color: Color.BrownDark });
+  const winLabel = createText("YOU WIN!", tileSize * 2, { color: Color.Beige });
+  const states: Array<RoomState> = [];
+  const playerColors = [Color.Beige, Color.BlueBright, Color.GreenBright, Color.Orange, Color.Purple, Color.Red];
+  const playerTiles = [Tile.Hero, Tile.Knight, Tile.Batman];
+  const playerGraves = [Tile.Grave, Tile.Grave1, Tile.Grave2];
 
   const initLevel = (
-    playerColor: string = Color.Purple,
+    playerColor: Color = Color.Purple,
     playerTile: Tile = Tile.Hero,
     playerGraveTile: Tile = Tile.Grave,
     roomNo = 0
   ) => {
     if (stage.hasChildren()) stage.removeAll();
+
+    destroyMany(platforms);
+    destroyMany(treasures);
+    destroyMany(groundEnemies);
+    destroyMany(flyingEnemies);
+
+    if (lastGrave) lastGrave.destroy();
+    if (portal) portal.destroy();
+    if (ghost) ghost.destroy();
+    if (player) player.destroy();
 
     platforms = [];
     treasures = [];
@@ -78,167 +98,97 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
     if (roomNo in states) {
       const state = states[roomNo];
       random.seed = state.seed;
-      lastGrave = createSpite(assets[state.graveTile], { x: state.x, y: state.y }, state.color);
-
-      ghost = createEnemy(
-        createSpite(assets[Tile.Ghost], { x: state.x, y: state.y, pivotX: 0.5, pivotY: 0.5 }, Color.GreyLight)
-      );
+      lastGrave = createColoredSprite(state.graveTile, state.color, { x: state.x, y: state.y });
+      ghost = createEnemy(Tile.Ghost, Color.GreyLight, { x: state.x, y: state.y, pivotX: 0.5, pivotY: 0.5 });
     } else {
       random.seed = Math.floor(Math.random() * 2147483646);
     }
 
     lastRoomSeed = random.seed;
-    const level = {
-        widthInTiles: stage.width / tileSize,
-        heightInTiles: stage.height / tileSize,
-        roomNo
-      },
-      room = generateRoom(level);
+    const room = generateRoom({
+      widthInTiles: stage.width / tileSize,
+      heightInTiles: stage.height / tileSize,
+      roomNo
+    });
 
     room.map.forEach((cell) => {
       if (cell.terrain === TerrainType.Sky) return;
-
-      let mapSprite: DisplayObject;
+      let sprite: Sprite;
       switch (cell.terrain) {
         case TerrainType.Rock:
-          mapSprite = createSpite(
-            assets[Tile.Wall2],
-            {
-              x: cell.x * tileSize,
-              y: cell.y * tileSize
-            },
-            Color.BrownLight
-          );
-          platforms.push(mapSprite);
+          sprite = createColoredSprite(Tile.Wall2, Color.BrownLight);
           break;
-
         case TerrainType.Grass:
-          mapSprite = createSpite(
-            assets[Tile.Wall1],
-            {
-              x: cell.x * tileSize,
-              y: cell.y * tileSize
-            },
-            Color.Brown
-          );
-          platforms.push(mapSprite);
+          sprite = createColoredSprite(Tile.Wall1, Color.Brown);
           break;
-
         case TerrainType.Border:
-          mapSprite = createSpite(
-            assets[Tile.Wall0],
-            {
-              x: cell.x * tileSize,
-              y: cell.y * tileSize
-            },
-            Color.Grey
-          );
-          platforms.push(mapSprite);
+          sprite = createColoredSprite(Tile.Wall0, Color.Grey);
           break;
       }
+      sprite.x = cell.x * tileSize;
+      sprite.y = cell.y * tileSize;
+      platforms.push(sprite);
     });
 
     room.map.forEach((cell: Cell) => {
       if (cell.item !== undefined) {
-        let image: HTMLCanvasElement, chest: Toggle, heroAnim: MovieClip, enemy: Enemy;
+        let chest: Toggle, enemy: Enemy, sprite: Sprite;
         switch (cell.item) {
           case ItemType.Player:
-            image = assets[playerTile];
-
-            heroAnim = createMovieClip(
-              [image, assets[playerTile + 1], assets[playerTile], assets[playerTile + 2]],
+            sprite = player = createPlayer(
+              [playerTile, playerTile + 1, playerTile, playerTile + 2],
+              playerGraveTile,
               playerColor,
               {
-                x: cell.x * tileSize + (tileSize - image.width) / 2,
-                y: cell.y * tileSize + (tileSize - image.height),
+                scaleX: -1,
                 pivotX: 0.5,
                 pivotY: 0.5,
-                border: ASSETS_BORDER_SIZE
+                borderSize,
+                frictionX: 1,
+                frictionY: 1,
+                gravity: 0.3,
+                jumpForce: -6.8,
+                isOnGround: true
               }
             );
-            player = createPlayer(heroAnim, playerTile, assets[playerGraveTile], playerGraveTile, {
-              frictionX: 1,
-              frictionY: 1,
-              gravity: 0.3,
-              jumpForce: -6.8,
-              isOnGround: true
-            });
-            player.scaleX = -1;
-
             break;
 
           case ItemType.Treasure:
-            image = assets[Tile.ChestClosed];
-            chest = createToggle(
-              image,
-              assets[Tile.ChestOpened],
-              Color.Gold,
-              {
-                x: cell.x * tileSize + (tileSize - image.width) / 2,
-                y: cell.y * tileSize + (tileSize - image.height)
-              },
-              0.4
-            );
+            chest = sprite = createToggle(Tile.ChestClosed, Tile.ChestOpened, Color.Gold, undefined, 0.4);
             treasures.push(chest);
             break;
 
           case ItemType.Exit:
-            image = assets[Tile.DoorClosed];
-            exit = createToggle(image, assets[Tile.DoorOpened], Color.Blood, {
-              x: cell.x * tileSize + (tileSize - image.width) / 2,
-              y: cell.y * tileSize + (tileSize - image.height)
-            });
+            exit = sprite = createToggle(Tile.DoorClosed, Tile.DoorOpened, Color.Blood);
             break;
 
           case ItemType.Portal:
-            image = assets[Tile.Vortex];
-            portal = createSpite(
-              image,
-              {
-                x: cell.x * tileSize + (tileSize - image.width) / 2,
-                y: cell.y * tileSize + (tileSize - image.height),
-                pivotX: 0.5,
-                pivotY: 0.5,
-                border: ASSETS_BORDER_SIZE
-              },
-              Color.Blue
-            );
+            portal = sprite = createColoredSprite(Tile.Vortex, Color.Blue, {
+              pivotX: 0.5,
+              pivotY: 0.5,
+              borderSize
+            });
             break;
 
           case ItemType.Snake:
-            image = assets[Tile.Snake];
-            groundEnemies.push(
-              createSpite(
-                image,
-                {
-                  x: cell.x * tileSize + (tileSize - image.width) / 2,
-                  y: cell.y * tileSize + (tileSize - image.height),
-                  pivotX: 0.5,
-                  pivotY: 1
-                },
-                Color.Green
-              )
-            );
+            sprite = createColoredSprite(Tile.Snake, Color.Green, {
+              pivotX: 0.5,
+              pivotY: 1
+            });
+            groundEnemies.push(sprite);
             break;
 
           case ItemType.Bat:
-            image = assets[Tile.Bat];
-            enemy = createEnemy(
-              createSpite(
-                image,
-                {
-                  x: cell.x * tileSize + (tileSize - image.width) / 2,
-                  y: cell.y * tileSize + (tileSize - image.height),
-                  pivotX: 0.5
-                },
-                Color.Grey
-              )
-            );
-            enemy.vx = 1;
-            enemy.scaleX = -1;
+            enemy = sprite = createEnemy(Tile.Bat, Color.Grey, {
+              pivotX: 0.5,
+              vx: 1,
+              scaleX: -1
+            });
             flyingEnemies.push(enemy);
             break;
         }
+        sprite.x = cell.x * tileSize + (tileSize - sprite.width) / 2;
+        sprite.y = cell.y * tileSize + (tileSize - sprite.height);
       }
     });
 
@@ -264,75 +214,46 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
     );
   };
 
-  const playerColors = [Color.Beige, Color.BlueBright, Color.GreenBright, Color.Orange, Color.Purple, Color.Red],
-    playerTiles = [Tile.Hero, Tile.Knight, Tile.Batman],
-    playerGraves = [Tile.Grave, Tile.Grave1, Tile.Grave2];
-
-  initLevel(getRandomElement(playerColors), getRandomElement(playerTiles), getRandomElement(playerGraves));
-
-  // Fade out
-  stage.addChild(blank);
-  tweenProp(
-    45,
-    1,
-    0,
-    smoothstep,
-    (a) => (blank.alpha = a),
-    () => stage.removeChild(blank)
-  );
-
   const resetLevel = () => {
-      hud.setRoomNo((room = 0));
-      hud.setCoinsCount((coins = 0));
+    hud.setRoomNo((room = 0));
+    hud.setCoinsCount((coins = 0));
 
-      initLevel(getRandomElement(playerColors), getRandomElement(playerTiles), getRandomElement(playerGraves));
-    },
-    killPlayer = () => {
-      player.die();
+    initLevel(getRandomElement(playerColors), getRandomElement(playerTiles), getRandomElement(playerGraves));
+  };
 
-      wait(1000).then(() => {
-        inTransition = true;
-        stage.addChild(blank);
-        tweenProp(
-          30,
-          (blank.alpha = 0),
-          1,
-          smoothstep,
-          (a) => {
-            blank.alpha = a;
-          },
-          () => {
-            if (room > 0)
-              states[room] = {
-                coins,
-                color: player.color!,
-                seed: lastRoomSeed,
-                x: player.x,
-                y: player.y,
-                graveTile: player.getGraveTile()
-              };
+  const killPlayer = () => {
+    player.die();
 
-            resetLevel();
-            inTransition = false;
+    wait(1000).then(() => {
+      inTransition = true;
+      stage.addChild(blank);
+      tweenProp(
+        30,
+        (blank.alpha = 0),
+        1,
+        smoothstep,
+        (a) => {
+          blank.alpha = a;
+        },
+        () => {
+          if (room > 0)
+            states[room] = {
+              coins,
+              color: player.color!,
+              seed: lastRoomSeed,
+              x: player.x,
+              y: player.y,
+              graveTile: player.graveTile
+            };
 
-            stage.addChild(blank);
-            tweenProp(30, (blank.alpha = 1), 0, smoothstep, (a) => (blank.alpha = a));
-          }
-        );
-      });
-    };
+          resetLevel();
+          inTransition = false;
 
-  const keyR = bindKey(82);
-  keyR.release = resetLevel;
-
-  const destroy = () => {
-    stage.removeAll();
-
-    platforms = [];
-    treasures = [];
-    drops = [];
-    groundEnemies = [];
-    flyingEnemies = [];
+          stage.addChild(blank);
+          tweenProp(30, (blank.alpha = 1), 0, smoothstep, (a) => (blank.alpha = a));
+        }
+      );
+    });
   };
 
   const gameOver = () => {
@@ -357,7 +278,32 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
     );
   };
 
-  // update
+  const destroy = () => {
+    stage.removeAll();
+
+    platforms = [];
+    treasures = [];
+    drops = [];
+    groundEnemies = [];
+    flyingEnemies = [];
+  };
+
+  initLevel(getRandomElement(playerColors), getRandomElement(playerTiles), getRandomElement(playerGraves));
+
+  // Fade out
+  stage.addChild(blank);
+  tweenProp(
+    45,
+    1,
+    0,
+    smoothstep,
+    (a) => (blank.alpha = a),
+    () => stage.removeChild(blank)
+  );
+
+  const keyR = bindKey(82);
+  keyR.release = resetLevel;
+
   return (dt: number) => {
     if (inTransition) return;
 
@@ -388,7 +334,7 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
       }
       if (isSpaceDown) {
         if (player.isOnGround) {
-          playJumpSound();
+          playSound(Sound.Jump);
           player.vy += player.jumpForce;
           player.isOnGround = false;
           player.frictionX = 1;
@@ -438,6 +384,7 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
         }
       }
     });
+
     // clamp
     if (player.x < tileSize / 2 - player.width) player.x = stage.width - tileSize + player.width;
     if (player.x > stage.width - tileSize + player.width) player.x = tileSize / 2 - player.width;
@@ -459,7 +406,7 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
       hud.setCoinsCount((coins += states[room].coins));
       delete states[room];
 
-      playCoinSound();
+      playSound(Sound.Coin);
     }
 
     if (ghost) {
@@ -481,9 +428,7 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
       enemy.scaleX = Math.sign(enemy.x - player.x);
       enemy.scaleY = 0.98 + Math.sin(time / 100) * 0.02;
 
-      if (hitTestRectangle(player, enemy)) {
-        killPlayer();
-      }
+      if (hitTestRectangle(player, enemy)) killPlayer();
     });
 
     flyingEnemies.forEach((enemy) => {
@@ -510,53 +455,34 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
     treasures.forEach((chest) => {
       if (chest.isOff() && hitTestRectangle(player, chest)) {
         hud.setCoinsCount(++coins);
-        playCoinSound();
+        playSound(Sound.Coin);
 
         const oldChestHeight = chest.height;
         chest.turnOn();
         chest.y -= chest.height - oldChestHeight;
 
-        let loot: Sprite, dropImage: HTMLCanvasElement;
+        let loot: Sprite;
         const drop = drops.pop()!;
         switch (drop) {
           case DropType.Coin:
-            dropImage = assets[Tile.Coin];
-            loot = createMovieClip(
-              assets.slice(Tile.Coin, Tile.Coin3 + 1),
-              Color.Gold,
-              {
-                x: chest.x + (chest.width - dropImage.width) / 2 + borderSize,
-                y: chest.y
-              },
-              true
-            );
+            // TODO: check pos
+            loot = createMovieClip([Tile.Coin, Tile.Coin1, Tile.Coin2, Tile.Coin3], Color.Gold, false, undefined, true);
             break;
           case DropType.Key:
-            dropImage = assets[Tile.Key];
-            loot = createSpite(
-              dropImage,
-              {
-                x: chest.x + (chest.width - dropImage.width) / 2 + borderSize,
-                y: chest.y,
-                border: borderSize
-              },
-              Color.Gold
-            );
+            loot = createColoredSprite(Tile.Key, Color.Gold, {
+              borderSize
+            });
             break;
           case DropType.Magic:
-            dropImage = assets[Tile.Hat];
-            loot = createSpite(
-              dropImage,
-              {
-                x: chest.x + (chest.width - dropImage.width) / 2 + borderSize,
-                y: chest.y,
-                border: borderSize
-              },
-              Color.Blue
-            );
+            loot = createColoredSprite(Tile.Hat, Color.Blue, {
+              borderSize
+            });
             break;
         }
+        loot.x = chest.x + (chest.width - loot.width) / 2 + borderSize;
+        loot.y = chest.y;
         stage.addChild(loot);
+
         tweenProp(
           15,
           (loot.alpha = 0),
@@ -581,7 +507,10 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
                 },
                 () => {
                   loot.alpha = 0;
-                  if (loot.stage) stage.removeChild(loot);
+                  if (loot.stage) {
+                    stage.removeChild(loot);
+                    loot.destroy();
+                  }
                 }
               );
             });
@@ -597,8 +526,9 @@ const createGameScreen = (game: Game, assets: Array<HTMLCanvasElement>): UpdateS
 
     if (exit.isOn() && hitTestRectangle(player, exit)) {
       hud.setRoomNo(++room);
-      initLevel(player.color, player.getTile(), player.getGraveTile(), room);
+      initLevel(player.color, player.tile, player.graveTile, room);
     }
   };
 };
+
 export { createGameScreen };

@@ -14,4 +14,3 @@ declare module "*.frag" {
 }
 
 declare const g: HTMLCanvasElement;
-declare const l: HTMLLabelElement;
