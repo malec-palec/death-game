@@ -22,4 +22,9 @@ const padZeros = (count: number, value: number) => String(value).padStart(count,
 
 const getRandomElement = <T>(arr: Array<T>): T => arr[(Math.random() * arr.length) | 0];
 
-export { loadImage, wait, shuffle, padZeros, getRandomElement };
+const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
+const lerp = (x: number, y: number, t: number) => (1 - t) * x + t * y;
+const mapLinear = (x: number, a1: number, a2: number, b1: number, b2: number) =>
+  b1 + ((x - a1) * (b2 - b1)) / (a2 - a1);
+
+export { loadImage, wait, shuffle, padZeros, getRandomElement, clamp, lerp, mapLinear };

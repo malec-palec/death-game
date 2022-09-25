@@ -13,6 +13,7 @@ const createSprite = (image: CanvasImageSource, props?: SpriteProps): Sprite => 
 
   const sprite: Sprite = Object.assign(
     createDisplayObject(imageWidth, imageHeight, (ctx) => {
+      ctx.transform(1, sprite.skewY, sprite.skewX, 1, 0, 0);
       ctx.drawImage(
         sprite.image,
         0,

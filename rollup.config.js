@@ -54,10 +54,12 @@ function releaseBuild() {
       commonjs(),
       mangle("bundle.js", 2),
       terser({
-        ecma: 2017,
+        ecma: 2020,
         mangle: {
           properties: {}
-        }
+        },
+        module: true,
+        toplevel: true
       }),
       fileSize(),
       createHtml("src/index.mustache", "bundle.js")

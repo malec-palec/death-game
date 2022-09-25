@@ -3,6 +3,7 @@ import { Color } from "./colors";
 import { canvasPool, colorizeImage } from "./core/canvas-utils";
 import { GameObjectComponent, GameObjectProps, getGameObjectComponent } from "./game-object";
 import { createMovieClip, MovieClip, MovieClipProps } from "./movie-clip";
+import { mapLinear } from "./utils";
 
 interface Player extends GameObjectComponent, MovieClip {
   readonly tile: Tile;
@@ -55,10 +56,13 @@ const createPlayer = (tiles: Array<Tile>, graveTile: Tile, color: Color, props: 
         player.vx *= -1;
         player.vy *= -1;
 
-        player.accX = 0;
+        player.accX = player.skewX = 0;
       },
       update(dt: number) {
-        if (!isDead) superUpdate(dt);
+        if (!isDead) {
+          player.skewX = -mapLinear(Math.abs(player.vx), 0, 5, 0, 0.13);
+          superUpdate(dt);
+        }
       },
       stop(frame?: number) {
         if (!isDead) superStop(frame);

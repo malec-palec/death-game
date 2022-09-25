@@ -13,6 +13,8 @@ interface DisplayObject {
   alpha: number;
   scaleX: number;
   scaleY: number;
+  skewX: number;
+  skewY: number;
   update(dt: number): void;
   render(context: CanvasRenderingContext2D): void;
   destroy(): void;
@@ -34,6 +36,8 @@ type DisplayObjectProps = Partial<{
   alpha: number;
   scaleX: number;
   scaleY: number;
+  skewX: number;
+  skewY: number;
 }>;
 
 const createDisplayObject = (
@@ -54,6 +58,8 @@ const createDisplayObject = (
     alpha: 1,
     scaleX: 1,
     scaleY: 1,
+    skewX: 0,
+    skewY: 0,
     update(dt: number) {
       // do nothing here
     },
