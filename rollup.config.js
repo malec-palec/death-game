@@ -36,8 +36,6 @@ function debugBuild() {
   };
 }
 
-const propsToMangle = [];
-
 function releaseBuild() {
   return {
     input: "src/index.ts",
@@ -54,8 +52,13 @@ function releaseBuild() {
       }),
       nodeResolve(),
       commonjs(),
-      mangle("bundle.js", propsToMangle),
-      terser({ ecma: 2017 }),
+      mangle("bundle.js", 2),
+      terser({
+        ecma: 2017,
+        mangle: {
+          properties: {}
+        }
+      }),
       fileSize(),
       createHtml("src/index.mustache", "bundle.js")
     ]
