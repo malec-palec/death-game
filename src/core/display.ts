@@ -15,9 +15,12 @@ interface DisplayObject {
   scaleY: number;
   skewX: number;
   skewY: number;
+
+  init(): void;
   update(dt: number): void;
   render(context: CanvasRenderingContext2D): void;
   destroy(): void;
+
   getGlobalX(): number;
   getGlobalY(): number;
   getHalfWidth(): number;
@@ -60,13 +63,10 @@ const createDisplayObject = (
     scaleY: 1,
     skewX: 0,
     skewY: 0,
-    update(dt: number) {
-      // do nothing here
-    },
+    init() {},
+    update(dt: number) {},
     render,
-    destroy() {
-      // do nothing here
-    },
+    destroy() {},
     getGlobalX(): number {
       return obj.stage ? obj.x + obj.stage.getGlobalX() : obj.x;
     },
@@ -87,6 +87,8 @@ const createDisplayObject = (
     },
     ...props
   };
+  if (props) obj.init();
+
   return obj;
 };
 

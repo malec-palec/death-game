@@ -36,13 +36,15 @@ const createSprite = (image: CanvasImageSource, props?: SpriteProps): Sprite => 
 
         sprite.width = imageWidth - sprite.borderSize * 2;
         sprite.height = imageHeight - sprite.borderSize * 2;
+      },
+      init() {
+        sprite.width -= sprite.borderSize * 2;
+        sprite.height -= sprite.borderSize * 2;
       }
     },
     props
   );
-
-  sprite.width -= sprite.borderSize * 2;
-  sprite.height -= sprite.borderSize * 2;
+  if (props) sprite.init();
 
   return sprite;
 };

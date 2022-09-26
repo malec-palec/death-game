@@ -14,13 +14,7 @@ interface MovieClip extends Sprite {
 
 type MovieClipProps = SpriteProps;
 
-const createMovieClip = (
-  tiles: Array<Tile>,
-  color: Color,
-  outline = false,
-  props?: SpriteProps,
-  isPlaying = false
-): MovieClip => {
+const createMovieClip = (tiles: Array<Tile>, color: Color, isPlaying = false, props?: SpriteProps): MovieClip => {
   let ticks = 0;
   let curFrame = 0;
 
@@ -66,6 +60,8 @@ const createMovieClip = (
     },
     props
   );
+  if (props) movie.init();
+
   return movie;
 };
 

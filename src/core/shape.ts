@@ -20,6 +20,7 @@ const createRectShape = (width: number, height: number, props?: ShapeProps): Sha
     },
     props
   );
+  if (props) shape.init();
   return shape;
 };
 

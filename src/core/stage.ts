@@ -63,6 +63,7 @@ const createStage = (width: number, height: number, props?: StageProps): Stage =
     },
     props
   );
+  if (props) stage.init();
   return stage;
 };
 

@@ -36,6 +36,7 @@ const createText = (value: string, size: number, props?: TextProps): Text => {
     },
     props
   );
+  if (props) text.init();
   return text;
 };
 

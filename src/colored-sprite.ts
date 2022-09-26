@@ -31,6 +31,8 @@ const createColoredSprite = (tile: Tile, color: Color, props?: SpriteProps): Col
     },
     props
   );
+  if (props) colorSprite.init();
+
   return colorSprite;
 };
 

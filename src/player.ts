@@ -60,7 +60,12 @@ const createPlayer = (tiles: Array<Tile>, graveTile: Tile, color: Color, props: 
       },
       update(dt: number) {
         if (!isDead) {
-          player.skewX = -mapLinear(Math.abs(player.vx), 0, 5, 0, 0.13);
+          if (player.isOnGround && Math.abs(player.vx) > 0.2) {
+            player.play();
+          } else {
+            player.stop();
+          }
+          player.skewX = -mapLinear(Math.abs(player.vx), 0, 5, 0, 0.14);
           superUpdate(dt);
         }
       },
@@ -74,6 +79,8 @@ const createPlayer = (tiles: Array<Tile>, graveTile: Tile, color: Color, props: 
     },
     props
   );
+  player.init();
+
   return player;
 };
 

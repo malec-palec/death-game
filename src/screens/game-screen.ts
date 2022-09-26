@@ -9,7 +9,7 @@ import { createRectShape } from "../core/shape";
 import { Sprite } from "../core/sprite";
 import { createText } from "../core/text";
 import { easeOutBack, sine, smoothstep, tweenProp } from "../core/tween";
-import { createEnemy, Enemy } from "../enemy";
+import { createEnemy, createGhost, createSnake, Enemy, Ghost, Snake } from "../enemy";
 import { Game } from "../game";
 import { createHUD } from "../hud";
 import { createMovieClip } from "../movie-clip";
@@ -44,14 +44,14 @@ const destroyMany = (list?: Array<DisplayObject>) => {
 const createGameScreen = (game: Game): UpdateScreen => {
   let platforms: Array<Sprite>;
   let treasures: Array<Toggle>;
-  let groundEnemies: Array<Sprite>;
-  let flyingEnemies: Array<Enemy>;
+  let snakes: Array<Snake>;
+  let bats: Array<Enemy>;
   let drops: Array<DropType>;
   let exit: Toggle;
   let player: Player;
   let portal: Sprite | undefined;
   let lastGrave: Sprite | undefined;
-  let ghost: Enemy | undefined;
+  let ghost: Ghost | undefined;
   let time: number;
   let room = 0;
   let coins = 0;
@@ -79,8 +79,8 @@ const createGameScreen = (game: Game): UpdateScreen => {
 
     destroyMany(platforms);
     destroyMany(treasures);
-    destroyMany(groundEnemies);
-    destroyMany(flyingEnemies);
+    destroyMany(snakes);
+    destroyMany(bats);
 
     if (lastGrave) lastGrave.destroy();
     if (portal) portal.destroy();
@@ -89,8 +89,8 @@ const createGameScreen = (game: Game): UpdateScreen => {
 
     platforms = [];
     treasures = [];
-    groundEnemies = [];
-    flyingEnemies = [];
+    snakes = [];
+    bats = [];
     drops = [];
     time = 0;
     lastGrave = portal = ghost = undefined;
@@ -98,8 +98,12 @@ const createGameScreen = (game: Game): UpdateScreen => {
     if (roomNo in states) {
       const state = states[roomNo];
       random.seed = state.seed;
-      lastGrave = createColoredSprite(state.graveTile, state.color, { x: state.x, y: state.y });
-      ghost = createEnemy(Tile.Ghost, Color.GreyLight, { x: state.x, y: state.y, pivotX: 0.5, pivotY: 0.5 });
+      lastGrave = createColoredSprite(state.graveTile, state.color, {
+        x: state.x,
+        y: state.y,
+        borderSize: ASSETS_BORDER_SIZE
+      });
+      ghost = createGhost(state);
     } else {
       random.seed = Math.floor(Math.random() * 2147483646);
     }
@@ -154,12 +158,13 @@ const createGameScreen = (game: Game): UpdateScreen => {
             break;
 
           case ItemType.Treasure:
-            chest = sprite = createToggle(Tile.ChestClosed, Tile.ChestOpened, Color.Gold, undefined, 0.4);
+            chest = sprite = createToggle(Tile.ChestClosed, Tile.ChestOpened, Color.Gold, 0.4);
             treasures.push(chest);
             break;
 
           case ItemType.Exit:
             exit = sprite = createToggle(Tile.DoorClosed, Tile.DoorOpened, Color.Blood);
+            exit.turnOn();
             break;
 
           case ItemType.Portal:
@@ -171,11 +176,7 @@ const createGameScreen = (game: Game): UpdateScreen => {
             break;
 
           case ItemType.Snake:
-            sprite = createColoredSprite(Tile.Snake, Color.Green, {
-              pivotX: 0.5,
-              pivotY: 1
-            });
-            groundEnemies.push(sprite);
+            snakes.push((sprite = createSnake()));
             break;
 
           case ItemType.Bat:
@@ -184,7 +185,7 @@ const createGameScreen = (game: Game): UpdateScreen => {
               vx: 1,
               scaleX: -1
             });
-            flyingEnemies.push(enemy);
+            bats.push(enemy);
             break;
         }
         sprite.x = cell.x * tileSize + (tileSize - sprite.width) / 2;
@@ -201,17 +202,10 @@ const createGameScreen = (game: Game): UpdateScreen => {
       shuffle(drops);
     }
 
-    stage.addMany(
-      hud,
-      ...platforms,
-      ...treasures,
-      exit,
-      ...groundEnemies,
-      ...flyingEnemies,
-      player,
-      lastGrave!,
-      ghost!
-    );
+    if (ghost) ghost.target = player;
+    snakes.forEach((snake) => (snake.target = player));
+
+    stage.addMany(hud, ...platforms, ...treasures, exit, ...snakes, ...bats, player, lastGrave!, ghost!);
   };
 
   const resetLevel = () => {
@@ -221,11 +215,9 @@ const createGameScreen = (game: Game): UpdateScreen => {
     initLevel(getRandomElement(playerColors), getRandomElement(playerTiles), getRandomElement(playerGraves));
   };
 
-  const killPlayer = () => {
-    player.die();
-
-    wait(1000).then(() => {
-      inTransition = true;
+  const endLevel = () => {
+    inTransition = true;
+    wait(500).then(() => {
       stage.addChild(blank);
       tweenProp(
         30,
@@ -284,8 +276,8 @@ const createGameScreen = (game: Game): UpdateScreen => {
     platforms = [];
     treasures = [];
     drops = [];
-    groundEnemies = [];
-    flyingEnemies = [];
+    snakes = [];
+    bats = [];
   };
 
   initLevel(getRandomElement(playerColors), getRandomElement(playerTiles), getRandomElement(playerGraves));
@@ -390,18 +382,21 @@ const createGameScreen = (game: Game): UpdateScreen => {
     if (player.x > stage.width - tileSize + player.width) player.x = tileSize / 2 - player.width;
     if (player.y + player.height > stage.height) player.y = -player.height;
 
-    if (!player.isAlive()) return;
-
-    // anim
-    if (player.isOnGround && Math.abs(player.vx) > 0.2) {
-      player.play();
-    } else {
-      player.stop();
+    if (!player.isAlive()) {
+      if (Math.abs(player.vx) < 0.01 && Math.abs(player.vy) < 0.01) endLevel();
+      return;
     }
+
+    snakes.forEach((snake) => {
+      if (hitTestRectangle(player, snake)) player.die();
+    });
+
+    if (ghost && hitTestRectangle(player, ghost)) player.die();
 
     if (lastGrave && hitTestRectangle(player, lastGrave)) {
       stage.removeChild(lastGrave);
-      lastGrave = undefined;
+      stage.removeChild(ghost!);
+      lastGrave = ghost = undefined;
 
       hud.setCoinsCount((coins += states[room].coins));
       delete states[room];
@@ -409,46 +404,24 @@ const createGameScreen = (game: Game): UpdateScreen => {
       playSound(Sound.Coin);
     }
 
-    if (ghost) {
-      const vx = player.x - ghost.x,
-        vy = player.y - ghost.y,
-        distance = Math.sqrt(vx * vx + vy * vy);
-      if (distance >= 1) {
-        ghost.x += vx * 0.001;
-        ghost.y += vy * 0.001;
-      }
-      ghost.scaleX = Math.sign(ghost.x - player.x);
-
-      if (hitTestRectangle(player, ghost)) {
-        killPlayer();
-      }
-    }
-
-    groundEnemies.forEach((enemy) => {
-      enemy.scaleX = Math.sign(enemy.x - player.x);
-      enemy.scaleY = 0.98 + Math.sin(time / 100) * 0.02;
-
-      if (hitTestRectangle(player, enemy)) killPlayer();
-    });
-
-    flyingEnemies.forEach((enemy) => {
-      enemy.x += enemy.vx;
-      enemy.y = enemy.y + Math.sin(time);
+    bats.forEach((bat) => {
+      bat.x += bat.vx;
+      bat.y = bat.y + Math.sin(time);
 
       for (const platform of platforms) {
-        if (hitTestRectangle(enemy, platform)) {
-          enemy.vx *= -1;
-          enemy.scaleX *= -1;
+        if (hitTestRectangle(bat, platform)) {
+          bat.vx *= -1;
+          bat.scaleX *= -1;
           break;
         }
       }
 
-      if (enemy.x < 0 || enemy.x > stage.width - enemy.width) {
-        enemy.vx *= -1;
-        enemy.scaleX *= -1;
+      if (bat.x < 0 || bat.x > stage.width - bat.width) {
+        bat.vx *= -1;
+        bat.scaleX *= -1;
       }
 
-      if (hitTestRectangle(player, enemy)) killPlayer();
+      if (hitTestRectangle(player, bat)) player.die();
     });
 
     // loot
@@ -466,7 +439,7 @@ const createGameScreen = (game: Game): UpdateScreen => {
         switch (drop) {
           case DropType.Coin:
             // TODO: check pos
-            loot = createMovieClip([Tile.Coin, Tile.Coin1, Tile.Coin2, Tile.Coin3], Color.Gold, false, undefined, true);
+            loot = createMovieClip([Tile.Coin, Tile.Coin1, Tile.Coin2, Tile.Coin3], Color.Gold, true);
             break;
           case DropType.Key:
             loot = createColoredSprite(Tile.Key, Color.Gold, {
