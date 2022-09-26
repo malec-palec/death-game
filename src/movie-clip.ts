@@ -10,11 +10,12 @@ interface MovieClip extends Sprite {
   stop(frame?: number): void;
   // outlineSize: number;
   // outlineColor: Color;
+  playSpeed: number;
 }
 
-type MovieClipProps = SpriteProps;
+type MovieClipProps = Partial<{ playSpeed: number }> & SpriteProps;
 
-const createMovieClip = (tiles: Array<Tile>, color: Color, isPlaying = false, props?: SpriteProps): MovieClip => {
+const createMovieClip = (tiles: Array<Tile>, color: Color, isPlaying = false, props?: MovieClipProps): MovieClip => {
   let ticks = 0;
   let curFrame = 0;
 
@@ -34,6 +35,7 @@ const createMovieClip = (tiles: Array<Tile>, color: Color, isPlaying = false, pr
   const movie: MovieClip = Object.assign(
     createSprite(images[0]),
     {
+      playSpeed: 4,
       images,
       color,
       play() {
@@ -47,7 +49,7 @@ const createMovieClip = (tiles: Array<Tile>, color: Color, isPlaying = false, pr
         if (!isPlaying) return;
 
         ticks++;
-        if (ticks % 4 === 0) {
+        if (ticks % movie.playSpeed === 0) {
           curFrame = (curFrame + 1) % framesNum;
           movie.setImage(movie.images[curFrame]);
         }

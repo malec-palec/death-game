@@ -9,7 +9,7 @@ import {
 } from "./core/canvas-utils";
 
 const enum Tile {
-  Wall0,
+  Wall,
   Wall1,
   Wall2,
   CoinHUD,
@@ -55,7 +55,7 @@ const enum Tile {
   Bat,
   Spider,
   Ghost,
-  Grave3,
+  Ghost1,
   Empty7
 }
 
@@ -94,7 +94,7 @@ const initAssets = (atlas: HTMLImageElement) => {
   const cols = atlas.height / ASSETS_TILE_SIZE;
   const scales = new Array(rows * cols).fill(ASSETS_ITEM_SCALE);
 
-  for (let i = Tile.Wall0; i <= Tile.Candle; i++) {
+  for (let i = Tile.Wall; i <= Tile.Candle; i++) {
     scales[i] = ASSETS_TILE_SCALE;
   }
   scales[Tile.CoinHUD] = 5;

@@ -126,7 +126,7 @@ const createGameScreen = (game: Game): UpdateScreen => {
           sprite = createColoredSprite(Tile.Wall1, Color.Brown);
           break;
         case TerrainType.Border:
-          sprite = createColoredSprite(Tile.Wall0, Color.Grey);
+          sprite = createColoredSprite(Tile.Wall, Color.Grey);
           break;
       }
       sprite.x = cell.x * tileSize;

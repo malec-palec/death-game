@@ -4,6 +4,7 @@ import { Color } from "./colors";
 import { DisplayObject } from "./core/display";
 import { Sprite, SpriteProps } from "./core/sprite";
 import { GameObjectComponent, GameObjectProps, getGameObjectComponent } from "./game-object";
+import { createMovieClip } from "./movie-clip";
 
 interface Enemy extends GameObjectComponent, Sprite {}
 
@@ -50,10 +51,15 @@ export interface Ghost extends Enemy {
 }
 
 export const createGhost = ({ x, y }: { x: number; y: number }): Ghost => {
+  const anim = createMovieClip([Tile.Ghost, Tile.Ghost1], Color.GreyLight, true);
+  const superUpdate = anim.update;
   const ghost: Ghost = Object.assign(
-    createEnemy(Tile.Ghost, Color.GreyLight),
+    anim,
+    getGameObjectComponent(),
     {
       update(dt: number) {
+        superUpdate(dt);
+
         if (!ghost.target) return;
 
         ghost.x += (ghost.target.x - ghost.x) * 0.001;
@@ -61,7 +67,7 @@ export const createGhost = ({ x, y }: { x: number; y: number }): Ghost => {
         ghost.scaleX = Math.sign(ghost.x - ghost.target.x);
       }
     },
-    { x, y, pivotX: 0.5, pivotY: 0.5, borderSize: ASSETS_BORDER_SIZE }
+    { x, y, pivotX: 0.5, pivotY: 0.5, borderSize: ASSETS_BORDER_SIZE, playSpeed: 16 }
   );
   ghost.init();
 
