@@ -7,7 +7,11 @@ const enum CollisionSide {
   Right
 }
 
-const rectangleCollision = (obj1: DisplayObject, obj2: DisplayObject): CollisionSide | undefined => {
+const rectangleCollision = (
+  obj1: DisplayObject & { vx?: number; vy?: number },
+  obj2: DisplayObject,
+  bounce = false
+): CollisionSide | undefined => {
   let collision: CollisionSide | undefined;
   let overlapX: number;
   let overlapY: number;
@@ -30,6 +34,7 @@ const rectangleCollision = (obj1: DisplayObject, obj2: DisplayObject): Collision
           collision = CollisionSide.Bottom;
           obj1.y = obj1.y - overlapY;
         }
+        if (bounce && obj1.vy) obj1.vy *= -1;
       } else {
         if (vx > 0) {
           collision = CollisionSide.Left;
@@ -38,6 +43,7 @@ const rectangleCollision = (obj1: DisplayObject, obj2: DisplayObject): Collision
           collision = CollisionSide.Right;
           obj1.x = obj1.x - overlapX;
         }
+        if (bounce && obj1.vx) obj1.vx *= -1;
       }
     }
   }

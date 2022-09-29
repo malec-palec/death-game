@@ -2,8 +2,8 @@ import { ASSETS_BORDER_SIZE, Tile } from "./assets";
 import { ColoredSprite, createColoredSprite } from "./colored-sprite";
 import { Color } from "./colors";
 import { DisplayObject } from "./core/display";
+import { GameObjectComponent, GameObjectProps, getGameObjectComponent } from "./core/game-object";
 import { Sprite, SpriteProps } from "./core/sprite";
-import { GameObjectComponent, GameObjectProps, getGameObjectComponent } from "./game-object";
 import { createMovieClip } from "./movie-clip";
 
 interface Enemy extends GameObjectComponent, Sprite {}
@@ -58,6 +58,8 @@ export const createGhost = ({ x, y }: { x: number; y: number }): Ghost => {
     getGameObjectComponent(),
     {
       update(dt: number) {
+        // TODO: make animation faster when it's closer to the player
+
         superUpdate(dt);
 
         if (!ghost.target) return;

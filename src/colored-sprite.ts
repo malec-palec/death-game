@@ -1,30 +1,39 @@
 import { assets, Tile } from "./assets";
 import { Color } from "./colors";
-import { canvasPool, colorizeImage } from "./core/canvas-utils";
+import { addOutline, canvasPool, colorizeImage, wrapCanvasFunc } from "./core/canvas-utils";
 import { createSprite, Sprite, SpriteProps } from "./core/sprite";
 
 interface ColoredSprite extends Sprite {
   color: Color;
+  outlineSize: number;
+  outlineColor: Color;
 }
 
-const createColoredSprite = (tile: Tile, color: Color, props?: SpriteProps): ColoredSprite => {
-  const image = colorizeImage(assets[tile], color);
+type ColoredSpriteProps = Partial<{
+  outlineSize: number;
+  outlineColor: Color;
+}> &
+  SpriteProps;
 
-  // if (true) {
-  //   const outlineSize = ASSETS_ITEM_SCALE;
-  //   const outlineColor = Color.White;
-  //   image = addOutline(image, outlineSize, outlineColor);
-  //   if (props && props.borderSize) {
-  //     props.borderSize = props.borderSize + outlineSize;
-  //   } else {
-  //     props = { borderSize: outlineSize };
-  //   }
-  // }
+const createColoredSprite = (tile: Tile, color: Color, props?: ColoredSpriteProps): ColoredSprite => {
+  const image = colorizeImage(assets[tile], color);
 
   const colorSprite: ColoredSprite = Object.assign(
     createSprite(image),
     {
       color,
+      outlineSize: 0,
+      outlineColor: Color.BrownDark,
+      init() {
+        const os = colorSprite.outlineSize;
+        if (os > 0) {
+          colorSprite.borderSize += os;
+          colorSprite.setImage(
+            wrapCanvasFunc(addOutline, colorSprite.image as HTMLCanvasElement, os, colorSprite.outlineColor)
+          );
+        }
+        // no super
+      },
       destroy() {
         canvasPool.free(colorSprite.image as HTMLCanvasElement);
       }
@@ -36,4 +45,4 @@ const createColoredSprite = (tile: Tile, color: Color, props?: SpriteProps): Col
   return colorSprite;
 };
 
-export { ColoredSprite, createColoredSprite };
+export { ColoredSprite, ColoredSpriteProps, createColoredSprite };

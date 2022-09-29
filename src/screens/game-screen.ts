@@ -1,4 +1,4 @@
-import { ASSETS_BORDER_SIZE, ASSETS_SCALED_TILE_SIZE, Tile } from "../assets";
+import { ASSETS_BORDER_SIZE, ASSETS_ITEM_SCALE, ASSETS_SCALED_TILE_SIZE, Tile } from "../assets";
 import { createColoredSprite } from "../colored-sprite";
 import { Color } from "../colors";
 import { CollisionSide, hitTestRectangle, rectangleCollision } from "../core/collision";
@@ -101,7 +101,8 @@ const createGameScreen = (game: Game): UpdateScreen => {
       lastGrave = createColoredSprite(state.graveTile, state.color, {
         x: state.x,
         y: state.y,
-        borderSize: ASSETS_BORDER_SIZE
+        borderSize: ASSETS_BORDER_SIZE,
+        outlineSize: ASSETS_ITEM_SCALE
       });
       ghost = createGhost(state);
     } else {
@@ -205,7 +206,7 @@ const createGameScreen = (game: Game): UpdateScreen => {
     if (ghost) ghost.target = player;
     snakes.forEach((snake) => (snake.target = player));
 
-    stage.addMany(hud, ...platforms, ...treasures, exit, ...snakes, ...bats, player, lastGrave!, ghost!);
+    stage.addMany(hud, ...platforms, ...treasures, exit, ...snakes, ...bats, lastGrave!, ghost!, player);
   };
 
   const resetLevel = () => {
@@ -377,19 +378,24 @@ const createGameScreen = (game: Game): UpdateScreen => {
       }
     });
 
+    snakes = snakes.filter((snake) => {
+      if (rectangleCollision(player, snake, true)) {
+        if (player.isAlive()) player.die();
+        stage.removeChild(snake);
+        return false;
+      }
+      return true;
+    });
+
     // clamp
     if (player.x < tileSize / 2 - player.width) player.x = stage.width - tileSize + player.width;
     if (player.x > stage.width - tileSize + player.width) player.x = tileSize / 2 - player.width;
     if (player.y + player.height > stage.height) player.y = -player.height;
 
     if (!player.isAlive()) {
-      if (Math.abs(player.vx) < 0.01 && Math.abs(player.vy) < 0.01) endLevel();
+      if (Math.abs(player.vx) < 0.01 && Math.abs(player.vy) < 0.01 && player.isOnGround) endLevel();
       return;
     }
-
-    snakes.forEach((snake) => {
-      if (hitTestRectangle(player, snake)) player.die();
-    });
 
     if (ghost && hitTestRectangle(player, ghost)) player.die();
 

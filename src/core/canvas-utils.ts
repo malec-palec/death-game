@@ -71,12 +71,29 @@ const colorizeImage = (
   return canvas;
 };
 
-const addOutline = (
+const drawRegion = (
   image: CanvasImageSource,
-  size: number,
-  color: string,
+  sx: number,
+  sy: number,
+  sw: number,
+  sh: number,
+  dx = 0,
+  dy = 0,
   canvas = canvasPool.alloc(),
   context = canvas.getContext("2d")!
+): HTMLCanvasElement => {
+  canvas.width = sw;
+  canvas.height = sh;
+  context.drawImage(image, sx, sy, sw, sh, dx, dy, sw, sh);
+  return canvas;
+};
+
+const addOutline = (
+  canvas: HTMLCanvasElement,
+  context = canvas.getContext("2d")!,
+  image: CanvasImageSource,
+  size: number,
+  color: string
 ) => {
   canvas.width = <number>image.width + size * 2;
   canvas.height = <number>image.height + size * 2;
@@ -95,23 +112,6 @@ const addOutline = (
   context.globalCompositeOperation = "source-over";
   context.drawImage(image, x, y);
 
-  return canvas;
-};
-
-const drawRegion = (
-  image: CanvasImageSource,
-  sx: number,
-  sy: number,
-  sw: number,
-  sh: number,
-  dx = 0,
-  dy = 0,
-  canvas = canvasPool.alloc(),
-  context = canvas.getContext("2d")!
-): HTMLCanvasElement => {
-  canvas.width = sw;
-  canvas.height = sh;
-  context.drawImage(image, sx, sy, sw, sh, dx, dy, sw, sh);
   return canvas;
 };
 
