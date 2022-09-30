@@ -4,7 +4,9 @@ import { wait } from "./utils";
 
 const enum Sound {
   Coin,
-  Jump
+  Jump,
+  Hit,
+  Option
 }
 
 const playSound = (sound: Sound) => zzfx(...sfx[sound]);

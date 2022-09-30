@@ -6,6 +6,7 @@ import { createRectShape } from "../core/shape";
 import { createText } from "../core/text";
 import { smoothstep, tweenProp } from "../core/tween";
 import { Game } from "../game";
+import { playSound, Sound } from "../sounds";
 import { ScreenName, UpdateScreen } from "./screen";
 
 const enum MenuItem {
@@ -28,6 +29,7 @@ const createStartScreen = (game: Game): UpdateScreen => {
     const { keyCode } = event;
     if (keyCode === KEY_UP || keyCode === KEY_DOWN || keyCode === KEY_LEFT || keyCode === KEY_RIGHT) {
       selection = (selection + 1) % menu.length;
+      playSound(Sound.Option);
     } else if (keyCode === SPACE || keyCode === ENTER) {
       removeEventListener("keyup", keyUpHandler);
       tweenProp(

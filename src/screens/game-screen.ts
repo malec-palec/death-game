@@ -397,7 +397,7 @@ const createGameScreen = (game: Game): UpdateScreen => {
       return;
     }
 
-    if (ghost && hitTestRectangle(player, ghost)) player.die();
+    if (ghost && rectangleCollision(player, ghost, true)) player.die();
 
     if (lastGrave && hitTestRectangle(player, lastGrave)) {
       stage.removeChild(lastGrave);

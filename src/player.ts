@@ -3,6 +3,7 @@ import { Color } from "./colors";
 import { addOutline, canvasPool, colorizeImage, wrapCanvasFunc } from "./core/canvas-utils";
 import { GameObjectComponent, GameObjectProps, getGameObjectComponent } from "./core/game-object";
 import { createMovieClip, MovieClip, MovieClipProps } from "./movie-clip";
+import { playSound, Sound } from "./sounds";
 import { remap } from "./utils";
 
 interface Player extends GameObjectComponent, MovieClip {
@@ -44,6 +45,8 @@ const createPlayer = (tiles: Array<Tile>, graveTile: Tile, color: Color, props: 
         return !isDead;
       },
       die() {
+        playSound(Sound.Hit);
+
         isDead = true;
 
         grave = colorizeImage(assets[graveTile], color);

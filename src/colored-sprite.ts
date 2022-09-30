@@ -25,11 +25,11 @@ const createColoredSprite = (tile: Tile, color: Color, props?: ColoredSpriteProp
       outlineSize: 0,
       outlineColor: Color.BrownDark,
       init() {
-        const os = colorSprite.outlineSize;
-        if (os > 0) {
-          colorSprite.borderSize += os;
+        const sos = colorSprite.outlineSize;
+        if (sos > 0) {
+          colorSprite.borderSize += sos;
           colorSprite.setImage(
-            wrapCanvasFunc(addOutline, colorSprite.image as HTMLCanvasElement, os, colorSprite.outlineColor)
+            wrapCanvasFunc(addOutline, colorSprite.image as HTMLCanvasElement, sos, colorSprite.outlineColor)
           );
         }
         // no super

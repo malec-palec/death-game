@@ -1,6 +1,6 @@
 import { assets, Tile } from "./assets";
 import { Color } from "./colors";
-import { canvasPool, colorizeImage } from "./core/canvas-utils";
+import { addOutline, canvasPool, colorizeImage, wrapCanvasFunc } from "./core/canvas-utils";
 import { createSprite, Sprite, SpriteProps } from "./core/sprite";
 
 interface MovieClip extends Sprite {
@@ -8,12 +8,12 @@ interface MovieClip extends Sprite {
   color: Color;
   play(): void;
   stop(frame?: number): void;
-  // outlineSize: number;
-  // outlineColor: Color;
   playSpeed: number;
+  outlineSize: number;
+  outlineColor: Color;
 }
 
-type MovieClipProps = Partial<{ playSpeed: number }> & SpriteProps;
+type MovieClipProps = Partial<{ playSpeed: number; outlineSize: number; outlineColor: Color }> & SpriteProps;
 
 const createMovieClip = (tiles: Array<Tile>, color: Color, isPlaying = false, props?: MovieClipProps): MovieClip => {
   let ticks = 0;
@@ -22,19 +22,11 @@ const createMovieClip = (tiles: Array<Tile>, color: Color, isPlaying = false, pr
   const framesNum = tiles.length;
   const images = tiles.map((tile) => colorizeImage(assets[tile], color));
 
-  // if (outline) {
-  //   const outlineSize = ASSETS_ITEM_SCALE;
-  //   images = images.map((image) => addOutline(image, outlineSize, Color.BrownDark));
-  //   if (props && props.borderSize) {
-  //     props.borderSize = props.borderSize + outlineSize;
-  //   } else {
-  //     props = { borderSize: outlineSize };
-  //   }
-  // }
-
   const movie: MovieClip = Object.assign(
     createSprite(images[0]),
     {
+      outlineSize: 0,
+      outlineColor: Color.BrownDark,
       playSpeed: 4,
       images,
       color,
@@ -44,6 +36,15 @@ const createMovieClip = (tiles: Array<Tile>, color: Color, isPlaying = false, pr
       stop(frame = 0) {
         isPlaying = false;
         movie.setImage(movie.images[(curFrame = frame)]);
+      },
+      init() {
+        const mos = movie.outlineSize;
+        if (mos > 0) {
+          movie.borderSize += mos;
+          movie.images = movie.images.map((image) => wrapCanvasFunc(addOutline, image, mos, movie.outlineColor));
+          movie.setImage(movie.images[0]);
+        }
+        // no super
       },
       update(dt: number) {
         if (!isPlaying) return;
