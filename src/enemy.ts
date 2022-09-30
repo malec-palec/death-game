@@ -1,4 +1,4 @@
-import { ASSETS_BORDER_SIZE, ASSETS_ITEM_SCALE, Tile } from "./assets";
+import { ASSETS_BORDER_SIZE, ASSETS_OUTLINE_SIZE, Tile } from "./assets";
 import { ColoredSprite, createColoredSprite } from "./colored-sprite";
 import { Color } from "./colors";
 import { DisplayObject } from "./core/display";
@@ -69,7 +69,7 @@ export const createGhost = ({ x, y }: { x: number; y: number }): Ghost => {
         ghost.scaleX = Math.sign(ghost.x - ghost.target.x);
       }
     },
-    { x, y, pivotX: 0.5, pivotY: 0.5, borderSize: ASSETS_BORDER_SIZE, playSpeed: 16, outlineSize: ASSETS_ITEM_SCALE }
+    { x, y, pivotX: 0.5, pivotY: 0.5, borderSize: ASSETS_BORDER_SIZE, playSpeed: 16, outlineSize: ASSETS_OUTLINE_SIZE }
   );
   ghost.init();
 

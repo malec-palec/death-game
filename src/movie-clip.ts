@@ -22,8 +22,10 @@ const createMovieClip = (tiles: Array<Tile>, color: Color, isPlaying = false, pr
   const framesNum = tiles.length;
   const images = tiles.map((tile) => colorizeImage(assets[tile], color));
 
+  const sprite = createSprite(images[0]);
+  const superInit = sprite.init;
   const movie: MovieClip = Object.assign(
-    createSprite(images[0]),
+    sprite,
     {
       outlineSize: 0,
       outlineColor: Color.BrownDark,
@@ -43,8 +45,9 @@ const createMovieClip = (tiles: Array<Tile>, color: Color, isPlaying = false, pr
           movie.borderSize += mos;
           movie.images = movie.images.map((image) => wrapCanvasFunc(addOutline, image, mos, movie.outlineColor));
           movie.setImage(movie.images[0]);
+        } else {
+          superInit();
         }
-        // no super
       },
       update(dt: number) {
         if (!isPlaying) return;

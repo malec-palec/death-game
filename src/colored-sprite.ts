@@ -18,8 +18,10 @@ type ColoredSpriteProps = Partial<{
 const createColoredSprite = (tile: Tile, color: Color, props?: ColoredSpriteProps): ColoredSprite => {
   const image = colorizeImage(assets[tile], color);
 
+  const sprite = createSprite(image);
+  const superInit = sprite.init;
   const colorSprite: ColoredSprite = Object.assign(
-    createSprite(image),
+    sprite,
     {
       color,
       outlineSize: 0,
@@ -31,8 +33,9 @@ const createColoredSprite = (tile: Tile, color: Color, props?: ColoredSpriteProp
           colorSprite.setImage(
             wrapCanvasFunc(addOutline, colorSprite.image as HTMLCanvasElement, sos, colorSprite.outlineColor)
           );
+        } else {
+          superInit();
         }
-        // no super
       },
       destroy() {
         canvasPool.free(colorSprite.image as HTMLCanvasElement);

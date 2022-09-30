@@ -1,4 +1,4 @@
-import { ASSETS_BORDER_SIZE, ASSETS_ITEM_SCALE, ASSETS_SCALED_TILE_SIZE, Tile } from "../assets";
+import { ASSETS_BORDER_SIZE, ASSETS_OUTLINE_SIZE, ASSETS_SCALED_TILE_SIZE, Tile } from "../assets";
 import { createColoredSprite } from "../colored-sprite";
 import { Color } from "../colors";
 import { CollisionSide, hitTestRectangle, rectangleCollision } from "../core/collision";
@@ -61,6 +61,7 @@ const createGameScreen = (game: Game): UpdateScreen => {
   const { stage } = game;
   const tileSize = ASSETS_SCALED_TILE_SIZE;
   const borderSize = ASSETS_BORDER_SIZE;
+  const outlineSize = ASSETS_OUTLINE_SIZE;
   const hud = createHUD(stage.width);
   const blank = createRectShape(stage.width, stage.height, { color: Color.BrownDark });
   const winLabel = createText("YOU WIN!", tileSize * 2, { color: Color.Beige });
@@ -101,8 +102,8 @@ const createGameScreen = (game: Game): UpdateScreen => {
       lastGrave = createColoredSprite(state.graveTile, state.color, {
         x: state.x,
         y: state.y,
-        borderSize: ASSETS_BORDER_SIZE,
-        outlineSize: ASSETS_ITEM_SCALE
+        borderSize,
+        outlineSize
       });
       ghost = createGhost(state);
     } else {
@@ -153,7 +154,8 @@ const createGameScreen = (game: Game): UpdateScreen => {
                 frictionY: 1,
                 gravity: 0.3,
                 jumpForce: -6.8,
-                isOnGround: true
+                isOnGround: true,
+                outlineSize
               }
             );
             break;

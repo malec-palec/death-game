@@ -1,4 +1,4 @@
-import { assets, ASSETS_ITEM_SCALE, Tile } from "./assets";
+import { assets, ASSETS_OUTLINE_SIZE, Tile } from "./assets";
 import { Color } from "./colors";
 import { addOutline, canvasPool, colorizeImage, wrapCanvasFunc } from "./core/canvas-utils";
 import { GameObjectComponent, GameObjectProps, getGameObjectComponent } from "./core/game-object";
@@ -31,7 +31,6 @@ const createPlayer = (tiles: Array<Tile>, graveTile: Tile, color: Color, props: 
   let grave: HTMLCanvasElement | undefined;
   let isDead = false;
 
-  const outlineSize = ASSETS_ITEM_SCALE;
   const superPlayer = createMovieClip(tiles, color, true);
   const { update: superUpdate, stop: superStop, destroy: superDestroy } = superPlayer;
 
@@ -50,8 +49,7 @@ const createPlayer = (tiles: Array<Tile>, graveTile: Tile, color: Color, props: 
         isDead = true;
 
         grave = colorizeImage(assets[graveTile], color);
-        grave = wrapCanvasFunc(addOutline, grave, outlineSize, Color.BrownDark);
-        player.borderSize += outlineSize;
+        grave = wrapCanvasFunc(addOutline, grave, ASSETS_OUTLINE_SIZE, Color.BrownDark);
 
         player.setImage(grave);
 
